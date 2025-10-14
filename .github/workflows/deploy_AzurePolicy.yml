@@ -84,7 +84,7 @@ jobs:
 
       # Policy Definitions
       - name: Deploy Policy Definitions
-        uses: Azure/cli@v2.1.0
+        uses: Azure/cli@v2.2.0
         with:
           azcliversion: 2.63.0
           inlineScript: |
@@ -103,7 +103,7 @@ jobs:
 
       # Policy Assignments
       - name: Deploy Policy Assignments
-        uses: Azure/cli@v2.1.0
+        uses: Azure/cli@v2.2.0
         with:
           azcliversion: 2.63.0
           inlineScript: |
@@ -122,7 +122,7 @@ jobs:
 
       # Policy Assignments Custom
       - name: Deploy Policy Assignments Custom
-        uses: Azure/cli@v2.1.0
+        uses: Azure/cli@v2.2.0
         with:
           azcliversion: 2.63.0
           inlineScript: |
@@ -142,7 +142,7 @@ jobs:
         # Policy Exemptions
       - name: Deploy Policy Exemptions
         if: ${{ inputs.policyExemptions }}
-        uses: Azure/cli@v2.1.0
+        uses: Azure/cli@v2.2.0
         with:
           azcliversion: 2.63.0
           inlineScript: |

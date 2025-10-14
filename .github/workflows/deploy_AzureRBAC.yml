@@ -75,7 +75,7 @@ jobs:
       # Role Definitions
 
       - name: Deploy Role Definitions
-        uses: Azure/cli@v2.1.0
+        uses: Azure/cli@v2.2.0
         with:
           inlineScript: |
 
@@ -96,7 +96,7 @@ jobs:
 
       - name: Deploy Role Assignments
         if: ${{ inputs.enableRoleAssignments }}
-        uses: Azure/cli@v2.1.0
+        uses: Azure/cli@v2.2.0
         with:
           inlineScript: |
 
