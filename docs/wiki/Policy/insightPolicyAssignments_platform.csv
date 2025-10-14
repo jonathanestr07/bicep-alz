@@ -1,0 +1,2 @@
+"Name","DisplayName","Description","PolicyDefinitionId","EnforcementMode","AssignedBy","Scope","NotScopes","Parameters"
+"Deny-Resource-Delete","Deny Azure Resource Deletion for specific Azure Resources","Deny Resource Deletion for identified Azure Resources.","${topLevelManagementGroupResourceId}/providers/Microsoft.Authorization/policySetDefinitions/Deny-Resource-Delete","Default","GitHub","*"," ",""

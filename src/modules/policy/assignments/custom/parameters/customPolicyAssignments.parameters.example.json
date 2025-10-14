@@ -1,0 +1,30 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "topLevelManagementGroupPrefix": {
+            "value": "alz"
+        },
+        "logAnalyticsWorkSpaceAndAutomationAccountLocation": {
+            "value": "australiaeast"
+        },
+        "logAnalyticsWorkspaceResourceId": {
+            "value": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/arg-aue-platform-mgmt-management/providers/Microsoft.OperationalInsights/workspaces/law-aue-platform-mgmt-quc4fgvohxjkq"
+        },
+        "logAnalyticsWorkspaceLogRetentionInDays": {
+            "value": "365"
+        },
+        "automationAccountName": {
+            "value": "aaa-aue-platform-mgmt-quc4fgvohxjkq"
+        },
+        "MSDFCEmailSecurityContact": {
+            "value": "test@test.com"
+        },
+        "ddosProtectionPlanId": {
+            "value": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/Hub_Networking_POC/providers/Microsoft.Network/ddosProtectionPlans/alz-ddos-plan"
+        },
+        "telemetryOptOut": {
+            "value": false
+        }
+    }
+}

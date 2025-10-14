@@ -1,0 +1,56 @@
+{
+  "name": "Deploy-Vnet-Flow-Logs",
+  "type": "Microsoft.Authorization/policyAssignments",
+  "apiVersion": "2019-09-01",
+  "properties": {
+    "description": "Configures flow log for specific virtual networks. It will allow to log information about IP traffic flowing through a virtual network. Flow log helps to identify unknown or undesired traffic, verify network isolation and compliance with enterprise access rules, analyze network flows from compromised IPs and network interfaces.",
+    "displayName": "Deploy virtual network Flow Logs to associated Virtual Networks",
+    "metadata": {
+      "assignedBy": "GitHub",
+      "_deployed_by_insight": true
+    },
+    "notScopes": [],
+    "parameters": {
+      "effect": {
+        "value": "DeployIfNotExists"
+      },
+      "vnetRegion": {
+        "value": "australiaeast"
+      },
+      "storageId": {
+        "value": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/arg-aue-plat-mgmt-logging/providers/Microsoft.Storage/storageAccounts/staaeplatmgmt3c24kqu57sv"
+      },
+      "timeInterval": {
+        "value": "60"
+      },
+      "logAnalytics": {
+        "value": "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/${topLevelManagementGroupPrefix}-mgmt/providers/Microsoft.OperationalInsights/workspaces/${topLevelManagementGroupPrefix}-la"
+      },
+      "workspaceRegion": {
+        "value": "australiaeast"
+      },
+      "TrafficAnalyticsEnabled": {
+        "value": false
+      },
+      "networkWatcherRG": {
+        "value": "NetworkWatcherRG"
+      },
+      "networkWatcherName": {
+        "value": "NetworkWatcher_australiaeast"
+      },
+      "retentionDays": {
+        "value": "30"
+      }
+    },
+    "policyDefinitionId": "${topLevelManagementGroupResourceId}/providers/Microsoft.Authorization/policyDefinitions/Deploy-Vnet-Flow-Logs",
+    "scope": null,
+    "enforcementMode": "Default",
+    "nonComplianceMessages": [],
+    "resourceSelectors": [],
+    "overrides": []
+  },
+  "location": null,
+  "identity": {
+    "type": "SystemAssigned"
+  }
+}

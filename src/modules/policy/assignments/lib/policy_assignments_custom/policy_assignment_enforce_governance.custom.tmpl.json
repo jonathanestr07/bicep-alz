@@ -1,0 +1,57 @@
+{
+  "name": "Enforce-GR-Governance",
+  "type": "Microsoft.Authorization/policyAssignments",
+  "apiVersion": "2019-09-01",
+  "properties": {
+    "description": "Enforce Azure Governance Guardrails for Tagging, Hybrid Use Benefits and other governance constructs.",
+    "displayName": "Enforce Azure Governance Guardrails",
+    "metadata": {
+      "assignedBy": "GitHub",
+      "_deployed_by_insight": true
+    },
+    "notScopes": [],
+    "parameters": {
+      "environmentTag": {
+        "value": "environment"
+      },
+      "ownerTag": {
+        "value": "owner"
+      },
+      "dataClassificationTag": {
+        "value": "dataClassification"
+      },
+      "criticalityTag": {
+        "value": "criticality"
+      },
+      "costCenterTag": {
+        "value": "costCenter"
+      },
+      "contactEmailTag": {
+        "value": "contactEmail"
+      },
+      "applicationNameTag": {
+        "value": "applicationName"
+      }
+    },
+    "policyDefinitionId": "${topLevelManagementGroupResourceId}/providers/Microsoft.Authorization/policySetDefinitions/Enforce-GR-Governance",
+    "scope": null,
+    "enforcementMode": "Default",
+    "nonComplianceMessages": [],
+    "resourceSelectors": [
+      {
+        "name": "resourceSelector-ActivityLogAlerts",
+        "selectors": [
+          {
+            "kind": "resourceType",
+            "notIn": ["microsoft.insights/activityLogAlerts"]
+          }
+        ]
+      }
+    ],
+    "overrides": []
+  },
+  "location": null,
+  "identity": {
+    "type": "SystemAssigned"
+  }
+}

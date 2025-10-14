@@ -1,0 +1,123 @@
+---
+name: deploy
+
+on:
+  workflow_call:
+    inputs:
+      artifactName:
+        required: true
+        type: string
+        default: artifact
+      environmentName:
+        required: true
+        type: string
+      location:
+        required: true
+        type: string
+      managementGroupId:
+        type: string
+      subscriptionId:
+        type: string
+      configKey:
+        required: true
+        type: string
+      moduleName:
+        required: true
+        type: string
+      deploymentLevel:
+        type: string
+        default: managementGroup
+      resourceGroupName:
+        type: string
+      whatIf:
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    name: deploy
+    environment: ${{ inputs.environmentName }}
+    runs-on: ubuntu-latest
+    continue-on-error: false
+    steps:
+      # Download Artifact
+      - name: Download Artifact from Build Job
+        uses: actions/download-artifact@v5
+        with:
+          name: ${{ inputs.artifactName }}
+
+      - name: Read Platform Variables
+        uses: pietrobolcato/action-read-yaml@1.1.0
+        id: read-yaml
+        with:
+          config: ${{ github.workspace }}/.github/platform-variables.yml
+
+      - name: Set Platform Variables
+        run: |
+          echo "templateFileKey=${{ inputs.configKey }}.templateFile" >> $GITHUB_ENV
+          echo "templateParameterFileKey=${{ inputs.configKey }}.templateParameterFile" >> $GITHUB_ENV
+
+      # Azure Login
+      - name: Az Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          enable-AzPSSession: true
+
+      # Deploy
+      - name: Deploy ${{ inputs.moduleName }}
+        uses: Azure/cli@v2.1.0
+        with:
+          inlineScript: |
+            moduleName="${{ inputs.moduleName }}"
+            deploymentLevel="${{ inputs.deploymentLevel }}"
+            managementGroupId="${{ inputs.managementGroupId }}"
+            resourceGroupName="${{ inputs.resourceGroupName }}"
+            location="${{ inputs.location }}"
+            templateFile="${{ steps.read-yaml.outputs[env.templateFileKey] }}"
+            templateParameterFile="${{ steps.read-yaml.outputs[env.templateParameterFileKey] }}"
+
+            moduleNameSanitized=$(echo "$moduleName" | sed 's/ /_/g')
+            DEPLOYMENTJOBID="alz-${moduleNameSanitized}-${{ github.run_number }}"
+
+            if [ ${{inputs.whatIf }} == 'true' ]; then
+              if [ "$deploymentLevel" == 'tenant' ]; then
+                echo "➡️ Tenant Deployment - WhatIf "
+                az deployment tenant what-if -n $DEPLOYMENTJOBID -l $location -f $templateFile -p $templateParameterFile -x Ignore NoChange Unsupported -r FullResourcePayloads
+              elif [ "$deploymentLevel" == 'subscription' ]; then
+                echo "➡️ Subscription Deployment - WhatIf "
+                az deployment sub what-if -n $DEPLOYMENTJOBID -l $location -f $templateFile -p $templateParameterFile -x Ignore NoChange Unsupported -r FullResourcePayloads
+              elif [ "$deploymentLevel" == 'resourceGroup' ]; then
+                echo "➡️ Resource Group Deployment - WhatIf "
+                az account set --subscription ${{ inputs.subscriptionId }}
+                az deployment group what-if -n $DEPLOYMENTJOBID -g $resourceGroupName -f $templateFile -p $templateParameterFile -x Ignore NoChange Unsupported -r FullResourcePayloads
+              else
+                echo "➡️ Management Group Deployment - WhatIf "
+                az deployment mg what-if -n $DEPLOYMENTJOBID -m $managementGroupId -l $location -f $templateFile -p $templateParameterFile -x Ignore NoChange Unsupported -r FullResourcePayloads
+              fi
+            fi
+
+            if [ "$deploymentLevel" == 'tenant' ]; then
+              echo "↗️ Tenant Deployment"
+              az deployment tenant create -n $DEPLOYMENTJOBID -l $location -f $templateFile -p $templateParameterFile
+            elif [ "$deploymentLevel" == 'subscription' ]; then
+              echo "↗️ Subscription Deployment"
+              az deployment sub create -n $DEPLOYMENTJOBID -l $location -f $templateFile -p $templateParameterFile
+            elif [ "$deploymentLevel" == 'resourceGroup' ]; then
+              echo "↗️ Resource Group Deployment"
+              az account set --subscription ${{ inputs.subscriptionId }}
+              az deployment group create -n $DEPLOYMENTJOBID -g $resourceGroupName -f $templateFile -p $templateParameterFile
+            else
+              echo "↗️ Management Group Deployment"
+              az deployment mg create -n $DEPLOYMENTJOBID -m $managementGroupId -l $location -f $templateFile -p $templateParameterFile
+            fi
+
+      # Log out of Azure
+      - name: Az Logout
+        run: az logout

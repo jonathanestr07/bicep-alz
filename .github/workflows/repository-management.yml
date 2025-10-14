@@ -1,0 +1,286 @@
+name: Respository Management
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 8 * * 1-5'
+
+concurrency:
+  group: repository-managements
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  statuses: write
+  packages: write
+  id-token: write # Explicitly used by cleanup-azure-deployment job when in Insight repository
+
+env:
+  remote_ALZ_repository: 'Azure/Enterprise-Scale'
+  remote_ALZ_branch_name: 'improvement/policy-library'
+
+jobs:
+  # This job is used to update the repository's wiki.
+  wiki:
+    name: 'Publish wiki from docs/wiki'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: spenserblack/actions-wiki@v0.3.0
+        with:
+          path: docs/wiki
+
+  # This job is used to update and close out stale pull requests.
+  stale:
+    name: 'Mark stale pull requests'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mark Stale Pull Requests
+        uses: actions/stale@v10
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          days-before-pr-stale: 14
+          days-before-pr-close: 30
+          stale-pr-label: inactive
+          close-pr-label: auto-close
+          exempt-pr-labels: keep-open
+          stale-pr-message: >
+            This pull request has been inactive for 14 days.
+            If you are finished with your changes, don't forget to get your PR reviewed and merged.
+          close-pr-message: >
+            This pull request has been inactive for 30 days. At this time, we are closing the PR.
+            If you decide to continue working on your change, you can reopen the PR and continue working. Thank you!
+
+  bicep_unit_tests:
+    name: Bicep Build
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout Repo
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      # List Bicep Version
+      - name: Get current Bicep Version
+        shell: pwsh
+        run: |
+          $bicepVersion = bicep --version
+          Write-Information "=====> Currently installed Bicep version is: $bicepVersion <=====" -InformationAction Continue
+
+      # Install Bicep
+      - name: Install latest Bicep version
+        shell: sh
+        run: |
+          # From https://docs.microsoft.com/en-us/azure/azure-resource-manager/bicep/install#linux
+          # Fetch the latest Bicep CLI binary
+          curl -Lo bicep https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64
+          # Mark it as executable
+          chmod +x ./bicep
+          # Add bicep to your PATH (requires admin)
+          sudo mv ./bicep /usr/local/bin/bicep
+          # Verify you can now access the 'bicep' command
+          bicep --help
+          # Done!
+
+      # List Bicep Version
+      - name: Get updated Bicep Version
+        shell: pwsh
+        run: |
+          $bicepVersion = bicep --version
+          Write-Information "=====> Now installed Bicep version is: $bicepVersion <=====" -InformationAction Continue
+
+      # Run a Bicep build and Lint Bicep Modules
+      - name: Build and Lint Bicep Modules
+        shell: pwsh
+        run: |
+          $output = @()
+          Get-ChildItem -Recurse -Filter '*.bicep' | ForEach-Object -Parallel {
+              Write-Information "==> Attempting Bicep Build For File: $_" -InformationAction Continue
+              $bicepOutput = bicep build $_.FullName 2>&1
+              if ($LastExitCode -ne 0)
+              {
+                foreach ($item in $bicepOutput) {
+                  $output += "$($item) `r`n"
+                }
+              }
+              else
+              {
+                echo "✅ $_"
+              }
+          }
+          if ($output.length -gt 0) {
+            throw $output
+          }
+
+      # Create GitHub Issue for Bicep Build Failures
+      - name: Create GitHub Issue
+        if: ${{ failure() }}
+        run: |
+          URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          gh issue create --title "❌ Bicep Build failing" --body "Check the latest run of the Bicep Build \n\n $URL" --label "bug"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  update-policy-templates:
+    name: Update Policy Library
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout Repository (${{ github.repository }})
+        uses: actions/checkout@v5
+        with:
+          path: ${{ github.repository }}
+          fetch-depth: 0
+
+      - name: Checkout Repository (${{ env.remote_ALZ_repository }})
+        uses: actions/checkout@v5
+        with:
+          repository: ${{ env.remote_ALZ_repository }}
+          path: ${{ env.remote_ALZ_repository }}
+          ref: main
+
+      - name: Create branch (${{ env.remote_ALZ_branch_name }})
+        run: |
+          git config user.name github-actions
+          git config user.email action@github.com
+          BRANCH_URL="repos/${{ github.repository }}/branches"
+          JQ_FILTER=".[] | select(.name == \"${{ env.remote_ALZ_branch_name }}\").name"
+          CHECK_BRANCH_ORIGIN=$(gh api $BRANCH_URL | jq -r "$JQ_FILTER")
+          if [ -z "$CHECK_BRANCH_ORIGIN" ]
+          then
+            echo "Checkout local branch (create new, no origin)..."
+            git checkout -b ${{ env.remote_ALZ_branch_name }}
+          else
+            echo "Checkout local branch (create new, track from origin)..."
+            git checkout -b ${{ env.remote_ALZ_branch_name }} --track origin/${{ env.remote_ALZ_branch_name }}
+          fi
+        working-directory: ${{ github.repository }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Run ./scripts/Invoke-LibraryUpdate.ps1
+        uses: azure/powershell@v2
+        with:
+          inlineScript: |
+            Write-Information "==> Running script..." -InformationAction Continue
+            ${{ github.repository }}/scripts/Invoke-LibraryUpdate.ps1 `
+              -AlzToolsPath "${{ github.workspace }}/${{ env.remote_ALZ_repository }}/src/Alz.Tools/" `
+              -TargetPath ${{ github.workspace }}/${{ github.repository }} `
+              -SourcePath ${{ github.workspace }}/${{ env.remote_ALZ_repository }}
+              Install-Module -Name 'ALZ' -Force
+          azPSVersion: 'latest'
+
+      - name: Run ./scripts/Invoke-PolicyToBicep.ps1
+        uses: azure/powershell@v2
+        with:
+          inlineScript: |
+            cd ${{ github.workspace }}/${{ github.repository }}
+            Write-Information "==> Running script..." -InformationAction Continue
+            ./scripts/Invoke-PolicyToBicep.ps1
+          azPSVersion: 'latest'
+
+      - name: Check for changes
+        id: git_status
+        run: |
+          CHECK_GIT_STATUS=($(git status -s))
+          git status -s
+          echo "changes=${#CHECK_GIT_STATUS[@]}" >> $GITHUB_OUTPUT
+        working-directory: ${{ github.repository }}
+
+      - name: Git Commit & Push (${{ env.remote_ALZ_branch_name }})
+        if: steps.git_status.outputs.changes > 0
+        run: |
+          echo "Pushing changes to origin..."
+          git add src/modules/policy/definitions/lib
+          git add src/modules/policy/assignments/lib
+          git config --global core.autocrlf input
+          git commit -m 'Update Policy Library ${{ github.run_id }} (automated)'
+          git push origin ${{ env.remote_ALZ_branch_name }}
+        working-directory: ${{ github.repository }}
+
+      - name: Create pull request
+        if: steps.git_status.outputs.changes > 0
+        run: |
+          HEAD_LABEL="${{ github.repository_owner }}:${{ env.remote_ALZ_branch_name }}"
+          BASE_LABEL="${{ github.repository_owner }}:$(echo '${{ github.ref }}' | sed 's:refs/heads/::')"
+          PULL_REQUEST_URL="repos/${{ github.repository }}/pulls"
+          JQ_FILTER=".[] | select(.head.label == \"$HEAD_LABEL\") | select(.base.label == \"$BASE_LABEL\") | .url"
+          CHECK_PULL_REQUEST_URL=$(gh api $PULL_REQUEST_URL | jq -r "$JQ_FILTER")
+          if [ -z "$CHECK_PULL_REQUEST_URL" ]
+          then
+            CHECK_PULL_REQUEST_URL=$(gh pr create \
+            --title "Update Policy Library (🤖 Automated)" \
+            --body "
+          ## Azure Policy Library Update
+
+          🤖 This is an automated **'pull_request'** containing updates to the library templates stored in \`~/modules/policy/definitions/lib\`. Please review the 'files changed' tab to review changes.
+
+          > **Note:** This PR was created by the **'repository-management'** workflow.
+
+          > **Important Note:** This PR may contain breaking changes, please review the changes carefully and test before merging. You may need to update your existing policy assignments to reflect the changes.
+
+          ## Type of Change
+
+          Please select the type of change this pull request represents:
+
+          - [ ] 🪲 Bug Fix
+          - [x] 🤩 Improvement to the IP
+          - [ ] 📝 Adding a feature
+
+          ## Checklist
+
+          Please review and check the following items before submitting this pull request:
+
+          - [x] Code has been tested locally
+          - [x] Documentation has been updated (if applicable)
+          - [x] All tests pass
+          - [x] No new linting errors
+          - [x] Follows the coding style guidelines" \
+            --base "${{ github.ref }}" \
+            --head "${{ env.remote_ALZ_branch_name }}")
+            echo "Created new PR: $CHECK_PULL_REQUEST_URL"
+          else
+            echo "Existing PR found: $CHECK_PULL_REQUEST_URL"
+          fi
+
+        working-directory: ${{ github.repository }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+  cleanup-azure-deployment:
+    name: Cleanup Azure Deployment
+    runs-on: ubuntu-latest
+    environment: 'platform_cleanup'
+    steps:
+      # Azure Login
+      - name: Az Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.INSIGHTONLY_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.INSIGHTONLY_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.INSIGHTONLY_AZURE_SUBSCRIPTION_ID }}
+          enable-AzPSSession: true
+
+      - name: Run Inline PowerShell
+        uses: azure/powershell@v2
+        with:
+          azPSVersion: 'latest'
+          inlineScript: |
+            $managementGroups = Get-AzManagementGroup
+            $managementGroups | ForEach-Object {
+              $deployments = Get-AzManagementGroupDeployment -ManagementGroupId $_.Name | Where-Object { $_.TimeStamp -lt (Get-Date).AddDays(-30) }
+              $deployments | ForEach-Object -Parallel {
+                Write-Information "==> Deleting Azure Deployment Jobs: $($_.DeloymentName)" -InformationAction Continue
+                Remove-AzManagementGroupDeployment -ManagementGroupId $_.ManagementGroupId -Name $_.DeploymentName -ErrorAction SilentlyContinue
+              }
+            }
+        # Azure Logout
+      - name: Az Logout
+        run: az logout

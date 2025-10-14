@@ -1,0 +1,55 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "topLevelManagementGroupPrefix": {
+      "value": "alz"
+    },
+    "topLevelPolicyAssignmentSovereigntyGlobal": {
+      "value": {
+        "topLevelSovereigntyGlobalPoliciesEnable": false,
+        "listOfAllowedLocations": []
+      }
+    },
+    "policyAssignmentSovereigntyConfidential": {
+      "value": {
+        "allowedResourceTypes": [],
+        "listOfAllowedLocations": [],
+        "allowedVirtualMachineSKUs": []
+      }
+    },
+    "logAnalyticsWorkSpaceAndAutomationAccountLocation": {
+      "value": "australiaeast"
+    },
+    "logAnalyticsWorkspaceResourceId": {
+      "value": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/arg-aue-platform-mgmt-management/providers/Microsoft.OperationalInsights/workspaces/law-aue-platform-mgmt-quc4fgvohxjkq"
+    },
+    "logAnalyticsWorkspaceLogRetentionInDays": {
+      "value": "365"
+    },
+    "dataCollectionRuleVMInsightsResourceId": {
+      "value": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/alz-logging/providers/Microsoft.Insights/dataCollectionRules/alz-ama-vmi-dcr"
+    },
+    "dataCollectionRuleChangeTrackingResourceId": {
+      "value": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/alz-logging/providers/Microsoft.Insights/dataCollectionRules/alz-ama-ct-dcr"
+    },
+    "dataCollectionRuleMDFCSQLResourceId": {
+      "value": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/alz-logging/providers/Microsoft.Insights/dataCollectionRules/ama-mdfcsql-default-dcr"
+    },
+    "userAssignedManagedIdentityResourceId": {
+      "value": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourcegroups/alz-logging/providers/Microsoft.ManagedIdentity/userAssignedIdentities/alz-umi-identity"
+    },
+    "automationAccountName": {
+      "value": "aaa-aue-platform-mgmt-quc4fgvohxjkq"
+    },
+    "MSDFCEmailSecurityContact": {
+      "value": "test@test.com"
+    },
+    "ddosProtectionPlanId": {
+      "value": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/Hub_Networking_POC/providers/Microsoft.Network/ddosProtectionPlans/alz-ddos-plan"
+    },
+    "telemetryOptOut": {
+      "value": false
+    }
+  }
+}

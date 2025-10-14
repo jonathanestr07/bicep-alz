@@ -1,0 +1,5 @@
+"Name","DisplayName","Description","PolicyDefinitionId","EnforcementMode","AssignedBy","Scope","NotScopes","Parameters"
+"Append-UDR-Route","Deploy default route to all route tables","This policy deploys a default route to all route tables.","${topLevelManagementGroupResourceId}/providers/Microsoft.Authorization/policyDefinitions/Append-UDR-Route","Default","GitHub","*"," ","addressPrefix.value=0.0.0.0/0;
+nextHopIpAddress.value=1.1.1.1;
+nextHopType.value=VirtualAppliance;
+routeName.value=FROM-subnet-TO-default-0.0.0.0-0"

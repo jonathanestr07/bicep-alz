@@ -1,0 +1,127 @@
+{
+  "addAppNameTag": {
+    "parameters": {
+      "tagName": {
+        "value": "[[parameters('applicationNameTag')]"
+      },
+      "tagValue": {
+        "value": ""
+      }
+    }
+  },
+  "addClassificationTag": {
+    "parameters": {
+      "tagName": {
+        "value": "[[parameters('dataClassificationTag')]"
+      },
+      "tagValue": {
+        "value": ""
+      }
+    }
+  },
+  "addContactEmailTag": {
+    "parameters": {
+      "tagName": {
+        "value": "[[parameters('contactEmailTag')]"
+      },
+      "tagValue": {
+        "value": ""
+      }
+    }
+  },
+  "addCostTag": {
+    "parameters": {
+      "tagName": {
+        "value": "[[parameters('costCenterTag')]"
+      },
+      "tagValue": {
+        "value": ""
+      }
+    }
+  },
+  "addCriticalityTag": {
+    "parameters": {
+      "tagName": {
+        "value": "[[parameters('criticalityTag')]"
+      },
+      "tagValue": {
+        "value": ""
+      }
+    }
+  },
+  "addEnvTag": {
+    "parameters": {
+      "tagName": {
+        "value": "[[parameters('environmentTag')]"
+      },
+      "tagValue": {
+        "value": ""
+      }
+    }
+  },
+  "addOwnerTag": {
+    "parameters": {
+      "tagName": {
+        "value": "[[parameters('ownerTag')]"
+      },
+      "tagValue": {
+        "value": ""
+      }
+    }
+  },
+  "appendAzureHub": {
+    "parameters": {}
+  },
+  "appendCreatedDate": {
+    "parameters": {}
+  },
+  "inheritAppNameTag": {
+    "parameters": {
+      "tagName": {
+        "value": "[[parameters('applicationNameTag')]"
+      }
+    }
+  },
+  "inheritClassificationTag": {
+    "parameters": {
+      "tagName": {
+        "value": "[[parameters('dataClassificationTag')]"
+      }
+    }
+  },
+  "inheritContactEmailTag": {
+    "parameters": {
+      "tagName": {
+        "value": "[[parameters('contactEmailTag')]"
+      }
+    }
+  },
+  "inheritCostTag": {
+    "parameters": {
+      "tagName": {
+        "value": "[[parameters('costCenterTag')]"
+      }
+    }
+  },
+  "inheritCriticalityTag": {
+    "parameters": {
+      "tagName": {
+        "value": "[[parameters('criticalityTag')]"
+      }
+    }
+  },
+  "inheritEnvTag": {
+    "parameters": {
+      "tagName": {
+        "value": "[[parameters('environmentTag')]"
+      }
+    }
+  },
+  "inheritOwnerTag": {
+    "parameters": {
+      "tagName": {
+        "value": "[[parameters('ownerTag')]"
+      }
+    }
+  }
+}

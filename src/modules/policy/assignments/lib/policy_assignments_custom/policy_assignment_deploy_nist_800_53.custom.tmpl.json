@@ -1,0 +1,25 @@
+{
+  "name": "Deploy-NIST-800-53",
+  "type": "Microsoft.Authorization/policyAssignments",
+  "apiVersion": "2019-09-01",
+  "properties": {
+    "description": "National Institute of Standards and Technology (NIST) SP 800-53 Rev. 5 provides a standardized approach for assessing, monitoring and authorizing cloud computing products and services to manage information security risk. These policies address a subset of NIST SP 800-53 R5 controls. Additional policies will be added in upcoming releases. For more information, visit https://aka.ms/nist800-53r5-initiative",
+    "displayName": "NIST SP 800-53 Rev. 5",
+    "metadata": {
+      "assignedBy": "GitHub",
+      "_deployed_by_insight": true
+    },
+    "notScopes": [],
+    "parameters": {},
+    "policyDefinitionId": "/providers/Microsoft.Authorization/policySetDefinitions/179d1daa-458f-4e47-8086-2a68d0d6c38f",
+    "scope": null,
+    "enforcementMode": "Default",
+    "nonComplianceMessages": [],
+    "resourceSelectors": [],
+    "overrides": []
+  },
+  "location": null,
+  "identity": {
+    "type": "SystemAssigned"
+  }
+}

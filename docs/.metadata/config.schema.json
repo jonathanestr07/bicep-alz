@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "WikiStringReplace": {
+      "type": "object",
+      "description": "Object containing key-value pairs for string replacement.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "WordDocumentation": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "The title of the document."
+          },
+          "subtitle": {
+            "type": "string",
+            "description": "The subtitle of the document."
+          },
+          "author": {
+            "type": "string",
+            "description": "The author of the document."
+          },
+          "filter": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Array of strings indicating the filter criteria for the document."
+          },
+          "exclude": {
+            "type": "object",
+            "properties": {
+              "paths": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Paths to be excluded."
+              },
+              "files": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Files to be excluded."
+              }
+            },
+            "required": ["paths", "files"],
+            "additionalProperties": false
+          },
+          "order": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Array indicating the order of documents."
+          },
+          "template": {
+            "type": "string",
+            "description": "The path to the template file."
+          }
+        },
+        "required": [
+          "title",
+          "subtitle",
+          "author",
+          "filter",
+          "exclude",
+          "template"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["WikiStringReplace", "WordDocumentation"],
+  "additionalProperties": false
+}

@@ -1,0 +1,42 @@
+{
+  "name": "Deny-Delete-ExpressRoute-Gateways",
+  "type": "Microsoft.Authorization/policyDefinitions",
+  "apiVersion": "2021-06-01",
+  "scope": null,
+  "properties": {
+    "policyType": "Custom",
+    "mode": "Indexed",
+    "displayName": "Deny resource deletion for ExpressRoute Gateways",
+    "description": "This policy denies resource deletion for ExpressRoute Gateways.",
+    "metadata": {
+      "version": "1.0.0",
+      "category": "Governance",
+      "source": "https://github.com/Insight-Services-APAC/azure-landing-zones-bicep/",
+      "_deployed_by_insight": true
+    },
+    "parameters": {},
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Network/expressRouteGateways"
+          },
+          {
+            "field": "tags.environment",
+            "equals": "Platform Production"
+          }
+        ]
+      },
+      "then": {
+        "effect": "DenyAction",
+        "details": {
+          "actionNames": ["delete"],
+          "cascadeBehaviors": {
+            "resourceGroup": "deny"
+          }
+        }
+      }
+    }
+  }
+}

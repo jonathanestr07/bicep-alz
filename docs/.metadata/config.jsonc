@@ -1,0 +1,151 @@
+{
+  "WikiStringReplace": {
+    // Change "[[value]]" the right side of the :. E.g. "[[customer]]": "Insight"
+    "[[Customer]]": "[[Customer]]", // Customer Name. E.g. Insight Services Australia Pty Ltd
+    "[[CustomerCode]]": "[[CustomerCode]]", // Customer Unique Identifier or Code. Eg. INS
+    "[[CustomerCode_Lower]]": "[[CustomerCode_Lower]]", // Customer Code in Lowercase Format. E.g. ins
+    "[[Customer_Shortname]]": "[[Customer_Shortname]]", // Shorter customer name for internal use. E.g. Insight
+    "[[Customer_FriendlyDomain]]": "[[Customer_FriendlyDomain]]", // Customer's full readable domain name. E.g. insight.com
+    "[[Customer_OnMicrosoftDomain]]": "[[Customer_OnMicrosoftDomain]]", // Customer's OnMicrosoft Domain. E.g. insight.onmicrosoft.com
+    "[[Customer_Email_Alerts]]": "[[Customer_Email_Alerts]]", // Email used for customer platform alerts
+    "[[Customer_CostCentre]]": "[[Customer_CostCentre]]", // Customer's Cost Centre for billing purposes
+    "[[Customer_Platform_Team_Name]]": "[[Customer_Platform_Team_Name]]", // Name of the Platform Team managing the infrastructure
+    "[[GitHubORAzDO]]": "[[GitHubORAzDO]]", // GitHub or Azure DevOps
+    "[[OrgName_GitHubDevOps]]": "[[OrgName_GitHubDevOps]]", // GitHub or Azure DevOps Organisation Name
+    "[[VendingMachine_GitHubDevOpsURL]]": "[[VendingMachine_GitHubDevOpsURL]]", // GitHub or Azure DevOps URL
+    "[[ADGroupPrefix]]": "[[ADGroupPrefix]]", // Entra ID Groups Prefix Name for RBAC purpose.
+    "[[locPrefix]]": "[[locPrefix]]", // Azure Platform Deployment Location Prefix. Ex: AUE or SYD
+    "[[platConnSubId]]": "[[platConnSubId]]", // Platform Connectivity Subscription Id
+    "[[platIdamSubId]]": "[[platIdamSubId]]", // Platform Identity Subscription Id
+    "[[platMgmtSubId]]": "[[platMgmtSubId]]", // Platform Management Subscription Id
+    "[[platConnCIDRwith_]]": "[[platConnCIDRwith_]]", // Platform Connectivity Virtual Network CIDR Range with _
+    "[[platConnCIDRwith/]]": "[[platConnCIDRwith/]]", // Platform Connectivity Virtual Network CIDR Range with /
+    "[[platIdamCIDRwith_]]": "[[platIdamCIDRwith_]]", // Platform Identity Virtual Network CIDR Range with _
+    "[[platIdamCIDRwith/]]": "[[platIdamCIDRwith/]]", // Platform Identity Virtual Network CIDR Range with /
+    "[[platMgmtCIDRwith_]]": "[[platMgmtCIDRwith_]]", // Platform Management Virtual Network CIDR Range with _
+    "[[platMgmtCIDRwith/]]": "[[platMgmtCIDRwith/]]", // Platform Management Virtual Network CIDR Range with /
+    "[[platConnBastionCIDRwith/]]": "[[platConnBastionCIDRwith/]]", // Platform Connectivity Bastion Subnet Range
+    "[[platConnFirewallCIDRwith/]]": "[[platConnFirewallCIDRwith/]]", // Platform Connectivity Azure Firewall Subnet Range
+    "[[platConnGatewayCIDRwith/]]": "[[platConnGatewayCIDRwith/]]", // Platform Connectivity Gateway Subnet Range
+    "[[platIdamAddsCIDRwith/]]": "[[platIdamAddsCIDRwith/]]", // Platform Identity Active Directory Domain Services Subnet Range
+    "[[platIdamPeCIDRwith/]]": "[[platIdamPeCIDRwith/]]", // Platform Identity Private Endpoints Subnet Range
+    "[[platMgmtMgmtCIDRwith/]]": "[[platMgmtMgmtCIDRwith/]]" // Platform Management Management Subnet Range
+
+    // Add any other string replacements here, can be anything you want to replace in the Wiki markdown and Draw.io files. E.g.
+    // "oldString":"newString"
+    // "Landing Zones":"Awesome Zones"
+  },
+  "WordDocumentation": [
+    {
+      "title": "Azure Landing Zone - Platform",
+      "subtitle": "High Level Design",
+      "author": "Insight Cloud Platform Team",
+      "filter": ["docs/wiki/HighLevelDesign"],
+      "exclude": {
+        "paths": [],
+        "files": ["HighLevelDesign-home.md"]
+      },
+      "order": [
+        "docs/wiki/HighLevelDesign/HighLevelDesign-azure-landing-zone-architecture.md",
+        "docs/wiki/HighLevelDesign/HighLevelDesign-azure-subscriptions.md",
+        "docs/wiki/HighLevelDesign/HighLevelDesign-management-groups.md",
+        "docs/wiki/HighLevelDesign/HighLevelDesign-identity-access-management.md",
+        "docs/wiki/HighLevelDesign/HighLevelDesign-active-directory.md",
+        "docs/wiki/HighLevelDesign/HighLevelDesign-privileged-identity-management.md",
+        "docs/wiki/HighLevelDesign/HighLevelDesign-azure-automation.md",
+        "docs/wiki/HighLevelDesign/HighLevelDesign-azure-key-vault.md",
+        "docs/wiki/HighLevelDesign/HighLevelDesign-service-health.md",
+        "docs/wiki/HighLevelDesign/HighLevelDesign-azure-monitor-workbooks.md",
+        "docs/wiki/HighLevelDesign/HighLevelDesign-azure-update-manager.md",
+        "docs/wiki/HighLevelDesign/HighLevelDesign-network-topology.md",
+        "docs/wiki/HighLevelDesign/HighLevelDesign-network-connectivity.md",
+        "docs/wiki/HighLevelDesign/HighLevelDesign-network-security.md",
+        "docs/wiki/HighLevelDesign/HighLevelDesign-private-dns-zones.md",
+        "docs/wiki/HighLevelDesign/HighLevelDesign-azure-naming-standards.md",
+        "docs/wiki/HighLevelDesign/HighLevelDesign-azure-platform-logs.md",
+        "docs/wiki/HighLevelDesign/HighLevelDesign-azure-policy.md",
+        "docs/wiki/HighLevelDesign/HighLevelDesign-defender-for-cloud.md",
+        "docs/wiki/HighLevelDesign/HighLevelDesign-microsoft-sentinel.md",
+        "docs/wiki/HighLevelDesign/HighLevelDesign-regulatory-compliance.md",
+        "docs/wiki/HighLevelDesign/HighLevelDesign-resource-groups.md",
+        "docs/wiki/HighLevelDesign/HighLevelDesign-resource-locks.md",
+        "docs/wiki/HighLevelDesign/HighLevelDesign-resource-tags.md",
+        "docs/Wiki/HighLevelDesign/HighLevelDesign-devsecops.md",
+        "docs/wiki/HighLevelDesign/HighLevelDesign-azure-devops.md"
+      ],
+      "template": "docs/.metadata/Insight_Template.docx"
+    },
+    {
+      "title": "Azure Landing Zone - Platform",
+      "subtitle": "PS Rule",
+      "author": "Insight Cloud Platform Team",
+      "filter": ["docs/wiki/PS-Rule"],
+      "exclude": {
+        "paths": [],
+        "files": []
+      },
+      "order": [],
+      "template": "docs/.metadata/Insight_Template.docx"
+    },
+    {
+      "title": "Azure Landing Zone - Platform",
+      "subtitle": "Bicep PSDocs",
+      "author": "Insight Cloud Platform Team",
+      "filter": ["docs/wiki/Bicep"],
+      "exclude": {
+        "paths": [],
+        "files": []
+      },
+      "order": [],
+      "template": "docs/.metadata/Insight_Template.docx"
+    },
+    {
+      "title": "Azure Landing Zone - Platform",
+      "subtitle": "PowerShell Scripts",
+      "author": "Insight Cloud Platform Team",
+      "filter": ["docs/wiki/Scripts"],
+      "exclude": {
+        "paths": [],
+        "files": []
+      },
+      "order": [],
+      "template": "docs/.metadata/Insight_Template.docx"
+    },
+    {
+      "title": "Azure Landing Zone - Platform",
+      "subtitle": "Pricing",
+      "author": "Insight Cloud Platform Team",
+      "filter": ["docs/wiki/Pricing"],
+      "exclude": {
+        "paths": [],
+        "files": []
+      },
+      "order": [],
+      "template": "docs/.metadata/Insight_Template.docx"
+    },
+    {
+      "title": "Azure Landing Zone - Platform",
+      "subtitle": "Azure Policy",
+      "author": "Insight Cloud Platform Team",
+      "filter": ["docs/wiki/Policy"],
+      "exclude": {
+        "paths": [],
+        "files": []
+      },
+      "order": [],
+      "template": "docs/.metadata/Insight_Template.docx"
+    },
+    {
+      "title": "Azure Landing Zone - Platform",
+      "subtitle": "Azure Firewall",
+      "author": "Insight Cloud Platform Team",
+      "filter": ["docs/wiki/Firewall"],
+      "exclude": {
+        "paths": [],
+        "files": []
+      },
+      "order": [],
+      "template": "docs/.metadata/Insight_Template.docx"
+    }
+  ]
+}

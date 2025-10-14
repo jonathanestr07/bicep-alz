@@ -1,0 +1,35 @@
+{
+  "name": "Deploy-ISM-Protected",
+  "type": "Microsoft.Authorization/policyAssignments",
+  "apiVersion": "2019-09-01",
+  "properties": {
+    "description": "This initiative includes policies that address a subset of Australian Government Information Security Manual (ISM) controls. Additional policies will be added in upcoming releases. For more information, visit https://aka.ms/auism-initiative.",
+    "displayName": "Australian Government ISM PROTECTED",
+    "metadata": {
+      "assignedBy": "GitHub",
+      "_deployed_by_insight": true
+    },
+    "notScopes": [],
+    "parameters": {
+      "membersToExclude": {
+        "value": "myUser1"
+      },
+      "logAnalyticsWorkspaceId": {
+        "value": "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/arg-aue-plat-mgmt-logging/providers/microsoft.operationalinsights/workspaces/law-aue-plat-mgmt-sxhl4dizk2lem"
+      },
+      "listOfResourceTypes": {
+        "value": ["Microsoft.Network/virtualNetworks"]
+      }
+    },
+    "policyDefinitionId": "/providers/Microsoft.Authorization/policySetDefinitions/27272c0b-c225-4cc3-b8b0-f2534b093077",
+    "scope": null,
+    "enforcementMode": "Default",
+    "nonComplianceMessages": [],
+    "resourceSelectors": [],
+    "overrides": []
+  },
+  "location": null,
+  "identity": {
+    "type": "SystemAssigned"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "virtualHubResourceId": {
+      "value": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/alz-vwan-eastus/providers/Microsoft.Network/virtualHubs/alz-vhub-eastus"
+    },
+    "remoteVirtualNetworkResourceId": {
+      "value": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/spokevnet-rg/providers/Microsoft.Network/virtualNetworks/vnet-spoke"
+    },
+    "virtualHubConnectionPrefix": {
+      "value": ""
+    },
+    "virtualHubConnectionSuffix": {
+      "value": "-vhc"
+    },
+    "enableInternetSecurity": {
+      "value": false
+    }
+  }
+}

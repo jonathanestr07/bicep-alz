@@ -1,0 +1,59 @@
+{
+  "automationAccounts": {
+    "parameters": {}
+  },
+  "azureBastion": {
+    "parameters": {}
+  },
+  "azureFirewall": {
+    "parameters": {}
+  },
+  "connections": {
+    "parameters": {}
+  },
+  "eventhubNamespace": {
+    "parameters": {}
+  },
+  "expressRouteCircuit": {
+    "parameters": {}
+  },
+  "expressRouteGateway": {
+    "parameters": {}
+  },
+  "keyVault": {
+    "parameters": {}
+  },
+  "loadBalancer": {
+    "parameters": {}
+  },
+  "localNetworkGateway": {
+    "parameters": {}
+  },
+  "networkSecurityGroup": {
+    "parameters": {}
+  },
+  "networkWatchers": {
+    "parameters": {}
+  },
+  "publicIpAddresses": {
+    "parameters": {}
+  },
+  "recoveryServicesVault": {
+    "parameters": {}
+  },
+  "routeTables": {
+    "parameters": {}
+  },
+  "storageAccounts": {
+    "parameters": {}
+  },
+  "userAssignedIdentity": {
+    "parameters": {}
+  },
+  "virtualNetworkGateway": {
+    "parameters": {}
+  },
+  "virtualNetworks": {
+    "parameters": {}
+  }
+}

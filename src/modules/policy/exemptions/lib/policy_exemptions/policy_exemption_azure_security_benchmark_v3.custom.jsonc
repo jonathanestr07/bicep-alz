@@ -1,0 +1,18 @@
+{
+  "name": "Deploy-ASC-Monitoring",
+  "type": "Microsoft.Authorization/policyExemptions",
+  "apiVersion": "2022-07-01-preview",
+  "properties": {
+    "displayName": "Enable Monitoring in Microsoft Defender for Cloud",
+    "description": "Policy Exemption for Enable Monitoring in Microsoft Defender for Cloud.",
+    "metadata": {
+      "version": "1.0.0",
+      "category": "Security"
+    },
+    "exemptionCategory": "Waiver",
+    "expiresOn": "2025-12-31",
+    "assignmentScopeValidation": "Default",
+    "policyAssignmentId": "/providers/microsoft.management/managementgroups/mg-alz/providers/microsoft.authorization/policyassignments/deploy-asc-monitoring",
+    "policyDefinitionReferenceIds": []
+  }
+}

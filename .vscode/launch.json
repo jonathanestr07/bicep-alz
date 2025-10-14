@@ -1,0 +1,468 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    /***********************
+        Full deployments
+    **********************/
+    {
+      "name": "Infrastructure.All",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/.local/Deploy-Local.ps1",
+      "args": ["-Verbose -Confirm:$false"],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "1. Run Project",
+        "order": 1
+      }
+    },
+    {
+      "name": "Infrastructure.Role.All",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/.local/Deploy-Local.ps1",
+      "args": ["-Verbose -Confirm:$false -Step AllRoles"],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "1. Run Project",
+        "order": 2
+      }
+    },
+    {
+      "name": "Infrastructure.Policy.All",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/.local/Deploy-Local.ps1",
+      "args": ["-Verbose -Confirm:$false -Step AllRoles"],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "1. Run Project",
+        "order": 2
+      }
+    },
+    /***************************
+        Individual Steps
+    ****************************/
+    {
+      "name": "Infrastructure.ManagementGroups",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/.local/Deploy-Local.ps1",
+      "args": ["-Verbose -Confirm:$false -Step ManagementGroups"],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "2. Run Infrastucture",
+        "order": 1
+      }
+    },
+    {
+      "name": "Infrastructure.Platform.Connectivity.Hub",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/.local/Deploy-Local.ps1",
+      "args": ["-Verbose -Confirm:$false -Step platform/platformConnectivity-hub"],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "2. Run Infrastucture",
+        "order": 1
+      }
+    },
+    {
+      "name": "Infrastructure.VPN.Connectivity.Hub",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/.local/Deploy-Local.ps1",
+      "args": ["-Verbose -Confirm:$false -Step platform/vpnConnectivity-hub"],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "2. Run Infrastucture",
+        "order": 1
+      }
+    },
+    {
+      "name": "Infrastructure.Platform.Connectivity.Vwan",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/.local/Deploy-Local.ps1",
+      "args": ["-Verbose -Confirm:$false -Step platform/platformConnectivity-vwan"],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "2. Run Infrastucture",
+        "order": 1
+      }
+    },
+    {
+      "name": "Infrastructure.VPN.Connectivity.Vwan",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/.local/Deploy-Local.ps1",
+      "args": ["-Verbose -Confirm:$false -Step platform/vpnConnectivity-vwan"],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "2. Run Infrastucture",
+        "order": 1
+      }
+    },
+    {
+      "name": "Infrastructure.Platform.Identity",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/.local/Deploy-Local.ps1",
+      "args": ["-Verbose -Confirm:$false -Step platform/platformIdentity"],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "2. Run Infrastucture",
+        "order": 1
+      }
+    },
+    {
+      "name": "Infrastructure.Platform.Management",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/.local/Deploy-Local.ps1",
+      "args": ["-Verbose -Confirm:$false -Step platform/platformManagement"],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "2. Run Infrastucture",
+        "order": 1
+      }
+    },
+    {
+      "name": "Infrastructure.Role.Definitions",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/.local/Deploy-Local.ps1",
+      "args": ["-Verbose -Confirm:$false -Step roles/customRoleDefinitions"],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "2. Run Infrastucture",
+        "order": 1
+      }
+    },
+    {
+      "name": "Infrastructure.Role.Assignments",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/.local/Deploy-Local.ps1",
+      "args": ["-Verbose -Confirm:$false -Step roles/roleAssignments"],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "2. Run Infrastucture",
+        "order": 1
+      }
+    },
+    {
+      "name": "Infrastructure.Policy.DefinitionsCustom",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/.local/Deploy-Local.ps1",
+      "args": ["-Verbose -Confirm:$false -Step policy/customPolicyDefinitions"],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "2. Run Infrastucture",
+        "order": 1
+      }
+    },
+    {
+      "name": "Infrastructure.Policy.AssignmentsALZDefault",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/.local/Deploy-Local.ps1",
+      "args": ["-Verbose -Confirm:$false -Step policy/alzDefaultPolicyAssignments"],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "2. Run Infrastucture",
+        "order": 1
+      }
+    },
+    {
+      "name": "Infrastructure.Policy.AssignmentsCustom",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/.local/Deploy-Local.ps1",
+      "args": ["-Verbose -Confirm:$false -Step policy/customPolicyAssignments"],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "2. Run Infrastucture",
+        "order": 1
+      }
+    },
+    {
+      "name": "Infrastructure.Policy.ExemptionsCustom",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/.local/Deploy-Local.ps1",
+      "args": ["-Verbose -Confirm:$false -Step policy/customPolicyExemptions"],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "2. Run Infrastucture",
+        "order": 1
+      }
+    },
+    {
+      "name": "Infrastructure.AzFirewallRules",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/.local/Deploy-Local.ps1",
+      "args": ["-Verbose -Confirm:$false -Step network/azFirewallRules"],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "2. Run Infrastucture",
+        "order": 1
+      }
+    },
+    /***********************
+        Utilities
+    **********************/
+    {
+      "name": "Build Documentation for Wiki",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/scripts/Set-DocumentationforWiki.ps1",
+      "args": [
+        "-sourceDrawingsFolder 'docs/drawings' -destinationDrawingsFolder 'docs/wiki/.media/'"
+      ],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "3. Utilities"
+      }
+    },
+    {
+      "name": "Build Documentation from Code",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/scripts/Set-Documentation.ps1",
+      "args": [
+        "-BicepDirectoryPaths ('src/orchestration', 'src/modules') -PSRuleDirectoryPaths ('.ps-rule') -ScriptsDirectoryPaths ('scripts') -PricingCSVFilePaths ('docs/wiki/Pricing') -GitHub"
+      ],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "3. Utilities"
+      }
+    },
+    {
+      "name": "Convert Wiki to Word",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/scripts/Convert-WikiMarkdowntoWord.ps1",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "3. Utilities"
+      }
+    },
+    {
+      "name": "PSRule Analyse [Modules]",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/scripts/Test-BicepModules.ps1",
+      "args": ["-PSRule -ModulesDirectoryPaths 'src/modules'"],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "3. Utilities"
+      }
+    },
+    {
+      "name": "PSRule Analyse [Configuration]",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/scripts/Test-BicepModules.ps1",
+      "args": ["-PSRule -ModulesDirectoryPaths 'src/configuration'"],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "3. Utilities"
+      }
+    },
+    {
+      "name": "Create default GitHub Environments",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/scripts/Set-GitHubEnvironments.ps1",
+      "args": ["-Organisation 'Insight-Services-APAC' -Repository 'azure-landing-zones-bicep'"],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "3. Utilities"
+      }
+    },
+    {
+      "name": "Remove old GitHub Action Runs/Deployments",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/scripts/Remove-GitHubItems.ps1",
+      "args": ["-Organisation 'Insight-Services-APAC' -Repository 'azure-landing-zones-bicep'"],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "3. Utilities"
+      }
+    },
+    {
+      "name": "Remove old GitHub Action Runs/Deployments [Cancelled only]",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/scripts/Remove-GitHubItems.ps1",
+      "args": [
+        "-Organisation 'Insight-Services-APAC' -Repository 'azure-landing-zones-bicep' -CancelledOnly"
+      ],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "3. Utilities"
+      }
+    },
+    {
+      "name": "Remove old GitHub Action Runs/Deployments [Failed only]",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/scripts/Remove-GitHubItems.ps1",
+      "args": [
+        "-Organisation 'Insight-Services-APAC' -Repository 'azure-landing-zones-bicep' -FailedOnly"
+      ],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "3. Utilities"
+      }
+    },
+    {
+      "name": "Remove old GitHub Action Runs/Deployments [Include main]",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/scripts/Remove-GitHubItems.ps1",
+      "args": [
+        "-Organisation 'Insight-Services-APAC' -Repository 'azure-landing-zones-bicep' -includeMain"
+      ],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "3. Utilities"
+      }
+    },
+    {
+      "name": "Remove old GitHub Action Runs/Deployments [Cancelled only, include main]",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/scripts/Remove-GitHubItems.ps1",
+      "args": [
+        "-Organisation 'Insight-Services-APAC' -Repository 'azure-landing-zones-bicep' -CancelledOnly -includeMain"
+      ],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "3. Utilities"
+      }
+    },
+    {
+      "name": "Remove old GitHub Action Runs/Deployments [Failed only, include main]",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/scripts/Remove-GitHubItems.ps1",
+      "args": [
+        "-Organisation 'Insight-Services-APAC' -Repository 'azure-landing-zones-bicep' -FailedOnly -includeMain"
+      ],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "3. Utilities"
+      }
+    },
+    {
+      "name": "Calculate Azure Pricing [Australia East, AUD]",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/scripts/Get-AzurePricingforSolution.ps1",
+      "args": ["-location australiaeast -currencyCode AUD"],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "3. Utilities"
+      }
+    },
+    {
+      "name": "Calculate Azure Pricing [Australia Southeast, AUD]",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/scripts/Get-AzurePricingforSolution.ps1",
+      "args": ["-location australiasoutheast -currencyCode AUD"],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "3. Utilities"
+      }
+    },
+    {
+      "name": "Build Documentation for Azure Policy",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/scripts/Set-DocumentationforPolicy.ps1",
+      "args": ["-GitHub"],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "3. Utilities"
+      }
+    },
+    {
+      "name": "Build Documentation for Azure Firewall",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/scripts/Set-DocumentationforFirewall.ps1",
+      "args": ["-GitHub -diagrams"],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "3. Utilities"
+      }
+    },
+    {
+      "name": "Convert Azure Policy to Bicep",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/scripts/Invoke-PolicyToBicep.ps1",
+      "args": [""],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "3. Utilities"
+      }
+    },
+    /***********************
+        Tests
+    **********************/
+    {
+      "name": "[Pester] Run All Tests",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/scripts/Test-AzPester.ps1",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "hidden": false,
+        "group": "4. Tests"
+      }
+    }
+  ]
+}

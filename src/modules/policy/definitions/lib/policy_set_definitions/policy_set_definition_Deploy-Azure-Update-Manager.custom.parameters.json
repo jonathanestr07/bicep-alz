@@ -1,0 +1,40 @@
+{
+  "updateManagerArcVM": {
+    "parameters": {
+      "assessmentMode": {
+        "value": "[[parameters('assessmentMode')]"
+      },
+      "osType": {
+        "value": "[[parameters('osType')]"
+      },
+      "locations": {
+        "value": "[[parameters('locations')]"
+      },
+      "tagValues": {
+        "value": "[[parameters('tagValues')]"
+      },
+      "tagOperator": {
+        "value": "[[parameters('tagOperator')]"
+      }
+    }
+  },
+  "updateManagerAzureVM": {
+    "parameters": {
+      "assessmentMode": {
+        "value": "[[parameters('assessmentMode')]"
+      },
+      "osType": {
+        "value": "[[parameters('osType')]"
+      },
+      "locations": {
+        "value": "[[parameters('locations')]"
+      },
+      "tagValues": {
+        "value": "[[parameters('tagValues')]"
+      },
+      "tagOperator": {
+        "value": "[[parameters('tagOperator')]"
+      }
+    }
+  }
+}

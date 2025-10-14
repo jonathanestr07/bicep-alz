@@ -1,0 +1,71 @@
+---
+name: '$(Date:ddMMyy).$(Rev:rr)-ALZ Platform Connectivity'
+
+pool:
+  vmImage: ubuntu-latest
+
+trigger: none
+
+# Variables - Variables template file.
+variables:
+  - template: variables/platform-variables.yml
+
+stages:
+  # Build Artifact
+  - template: templates/build.yml
+    parameters:
+      workingDirectory: $(Pipeline.Workspace)
+      artifactName: infrastructure
+
+  # Deploy Management Groups
+  - template: templates/deploy_Default.yml
+    parameters:
+      jobId: $(build.buildId)
+      condition: and(succeeded(),eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+      dependsOn: [build]
+      deploymentLevel: 'tenant'
+      moduleName: 'Management Groups'
+      jobName: 'Management_Groups'
+      workingDirectory: infrastructure
+      serviceConnection: $(platformServiceConnection_ManagementGroups)
+      environmentName: platform-managementGroup
+      location: $(location)
+      templateFile: $(deploy_ManagementGroups.templateFile)
+      templateParameterFile: $(deploy_ManagementGroups.templateParameterFile)
+      whatIf: false
+
+  # Deploy Platform Connectivity Landing Zone
+  - template: templates/deploy_Default.yml
+    parameters:
+      jobId: $(build.buildId)
+      condition: and(succeeded(),eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+      dependsOn: [Management_Groups]
+      deploymentLevel: 'managementGroup'
+      moduleName: 'Platform Connectivity'
+      jobName: 'Platform_Connectivity'
+      workingDirectory: infrastructure
+      serviceConnection: $(platformServiceConnection_PlatformConnectivity)
+      environmentName: platform-connectivity
+      managementGroupId: $(rootMg)
+      location: $(location)
+      templateFile: $(deploy_Platform_Connectivity.templateFile)
+      templateParameterFile: $(deploy_Platform_Connectivity.templateParameterFile)
+      whatIf: false
+
+  # Deploy Site-to-Site Connectivity
+  - template: templates/deploy_Default.yml
+    parameters:
+      jobId: $(build.buildId)
+      condition: and(succeeded(),eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+      dependsOn: [Platform_Connectivity]
+      deploymentLevel: 'resourceGroup'
+      moduleName: 'Site to Site Connectivity'
+      jobName: 'SitetoSite_Connectivity'
+      workingDirectory: infrastructure
+      serviceConnection: $(platformServiceConnection_PlatformConnectivity)
+      environmentName: platform-connectivity
+      resourceGroupName: $(resourceGroupName_SiteToSite)
+      location: $(location)
+      templateFile: $(deploy_Platform_Connectivity_SiteToSite.templateFile)
+      templateParameterFile: $(deploy_Platform_Connectivity_SiteToSite.templateParameterFile)
+      whatIf: false

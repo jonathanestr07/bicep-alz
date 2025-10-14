@@ -1,0 +1,179 @@
+---
+name: '$(Date:ddMMyy).$(Rev:rr)-Pull Request'
+
+# This pipeline is triggered on PRs to the main branch, it will not run on any branches.
+trigger:
+  branches:
+    exclude:
+      - '*'
+
+# Enable PR triggers only on main.
+# pr: definition does not work if Azure DevOps repository is used. This is only applicable to GitHub/Bitbucket repositories.
+# Please configure the PR trigger in the Azure DevOps UI (Branch policies) if you are using Azure DevOps repository.
+
+variables:
+  PSRULE_DIRECTORY: './'
+  INFRA_WORKING_DIRECTORY: './'
+  currencyCode: 'AUD'
+  location: 'australiaeast'
+
+jobs:
+  - job: MegaLinter
+    displayName: 'Linting'
+    steps:
+      # Checkout repo
+      - checkout: self
+
+      # Pull MegaLinter docker image
+      - script: docker pull oxsecurity/megalinter:v7
+        displayName: Pull MegaLinter Image
+
+      # Run MegaLinter
+      - script: |
+          docker run -v $(System.DefaultWorkingDirectory):/tmp/lint \
+            --env-file <(env | grep -e SYSTEM_ -e BUILD_ -e TF_ -e AGENT_) \
+            -e SYSTEM_ACCESSTOKEN=$(System.AccessToken) \
+            -e GIT_AUTHORIZATION_BEARER=$(System.AccessToken) \
+            oxsecurity/megalinter:v7
+        displayName: Run MegaLinter Linting
+
+      # Upload MegaLinter reports
+      - task: PublishPipelineArtifact@1
+        condition: succeededOrFailed()
+        displayName: Upload MegaLinter reports
+        inputs:
+          targetPath: '$(System.DefaultWorkingDirectory)/megalinter-reports/'
+          artifactName: Linting Report
+
+  - job: PSRule
+    displayName: 'PSRule Validation'
+    steps:
+      # Checkout Repo
+      - checkout: self
+        displayName: Check-Out Repository
+        submodules: true
+        clean: true
+        enabled: true
+
+      # Install PSRule.Rules.Azure from the PowerShell Gallery
+      - task: ps-rule-install@2
+        displayName: Install PSRule
+        inputs:
+          module: 'PSRule.Rules.Azure' # Install PSRule.Rules.Azure from the PowerShell Gallery.
+          latest: false # Only install the module if not already installed.
+          prerelease: false # Install stable versions only.
+
+      # Run analysis from JSON files using the `PSRule.Rules.Azure` module and custom rules from `.ps-rule/`.
+      - task: ps-rule-assert@2
+        displayName: Run PSRule [Modules]
+        inputs:
+          inputType: inputPath
+          inputPath: src/modules/ # The path PSRule will look for files to validate.
+          modules: 'PSRule.Rules.Azure,PSRule.Rules.CAF' # Analyze objects using the rules within the PSRule.Rules.Azure PowerShell module.
+          baseline: Azure.Default # The name of a PSRule baseline to use.
+          outputFormat: NUnit3 # Save results to an NUnit report.
+          outputPath: reports/ps-rule-results-modules.xml
+
+      # Run analysis from JSON files using the `PSRule.Rules.Azure` module and custom rules from `.ps-rule/`.
+      - task: ps-rule-assert@2
+        displayName: Run PSRule [Configuration]
+        inputs:
+          inputType: inputPath
+          inputPath: src/configuration/ # The path PSRule will look for files to validate.
+          modules: 'PSRule.Rules.Azure,PSRule.Rules.CAF' # Analyze objects using the rules within the PSRule.Rules.Azure PowerShell module.
+          baseline: Azure.Default # The name of a PSRule baseline to use.
+          outputFormat: NUnit3 # Save results to an NUnit report.
+          outputPath: reports/ps-rule-results-configuration.xml
+
+      # Publish NUnit report as test results
+      - task: PublishTestResults@2
+        displayName: Publish PSRule Results [Modules]
+        inputs:
+          testRunTitle: 'PSRule' # The title to use for the test run.
+          testRunner: NUnit # Import report using the NUnit format.
+          testResultsFiles: 'reports/ps-rule-results-modules.xml' # The previously saved NUnit report.
+
+      # Publish NUnit report as test results
+      - task: PublishTestResults@2
+        displayName: Publish PSRule Results [Configuration]
+        inputs:
+          testRunTitle: 'PSRule' # The title to use for the test run.
+          testRunner: NUnit # Import report using the NUnit format.
+          testResultsFiles: 'reports/ps-rule-results-configuration.xml' # The previously saved NUnit report.
+
+  - job: PS_Docs
+    displayName: Generate Documentation
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+      - checkout: self
+        fetchDepth: 0
+        persistCredentials: true
+
+      - task: PowerShell@2
+        displayName: 'Get Azure Pricing'
+        inputs:
+          targetType: 'inline'
+          script: |
+            Write-Information "==> Running script..." -InformationAction Continue
+            ./scripts/Get-AzurePricingforSolution.ps1 -location $(location) -currencyCode $(currencyCode)
+
+      - task: PowerShell@2
+        displayName: 'Set Documentation'
+        inputs:
+          targetType: 'inline'
+          script: |
+            Write-Information "==> Installing needed modules..." -InformationAction Continue
+            Install-Module -Name powershell-yaml -Force -SkipPublisherCheck
+            Install-Module -Name PSDocs -Force -SkipPublisherCheck
+            Install-Module -Name PSDocs.Azure -Force -SkipPublisherCheck
+            Write-Information "==> Running script..." -InformationAction Continue
+            ./scripts/Set-Documentation.ps1
+
+      - task: PowerShell@2
+        displayName: 'Set Documentation for Policy'
+        inputs:
+          targetType: 'inline'
+          script: |
+            Write-Information "==> Installing needed modules..." -InformationAction Continue
+            Install-Module -Name PSDocs -Force -SkipPublisherCheck
+            Write-Information "==> Running script..." -InformationAction Continue
+            ./scripts/Set-DocumentationforPolicy.ps1
+
+      - task: PowerShell@2
+        displayName: 'Set Documentation for Firewall'
+        inputs:
+          targetType: 'inline'
+          script: |
+            Write-Information "==> Installing needed modules..." -InformationAction Continue
+            Install-Module -Name PSDocs -Force -SkipPublisherCheck
+            Write-Information "==> Running script..." -InformationAction Continue
+            ./scripts/Set-DocumentationforFirewall.ps1
+
+      - task: Bash@3
+        displayName: Check for changes
+        inputs:
+          targetType: 'inline'
+          script: |
+            CHECK_GIT_STATUS=($(git status -s))
+            git status -s
+            echo "##vso[task.setvariable variable=changes]${#CHECK_GIT_STATUS[@]}"
+
+      - task: Bash@3
+        displayName: Git Commit & Push
+        condition: and(succeeded(), ne(variables['changes'], '0'))
+        inputs:
+          targetType: 'inline'
+          script: |
+            git config user.email "pullrequest-bot@example.com"
+            git config user.name "Pull Request Bot"
+
+            # For example, "feature/my-branch"
+            # or "users/joe/my-branch"
+            echo "Source branch name: $(System.PullRequest.SourceBranch)"
+
+            git add --all
+            git commit -m "Generation of documentation (automated) [skip ci]"
+
+            # Push HEAD to the *source* branch name:
+            git push origin HEAD:$(System.PullRequest.SourceBranch)

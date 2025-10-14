@@ -1,0 +1,38 @@
+{
+  "name": "Append-CreatedDate-Tag",
+  "type": "Microsoft.Authorization/policyDefinitions",
+  "apiVersion": "2021-06-01",
+  "scope": null,
+  "properties": {
+    "policyType": "Custom",
+    "mode": "Indexed",
+    "displayName": "Append CreatedDate Tag to all Azure Resources",
+    "description": "Creates a CreatedDate tag for each Azure Resource",
+    "metadata": {
+      "version": "1.0.0",
+      "category": "Governance",
+      "source": "https://github.com/Insight-Services-APAC/azure-landing-zones-bicep/",
+      "_deployed_by_insight": true
+    },
+    "parameters": {},
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "tags['CreatedDate']",
+            "exists": "false"
+          }
+        ]
+      },
+      "then": {
+        "effect": "append",
+        "details": [
+          {
+            "field": "tags['CreatedDate']",
+            "value": "[utcNow()]"
+          }
+        ]
+      }
+    }
+  }
+}

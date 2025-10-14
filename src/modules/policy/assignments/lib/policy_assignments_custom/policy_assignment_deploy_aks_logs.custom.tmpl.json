@@ -1,0 +1,38 @@
+{
+  "name": "Deploy-AKS-Diag-Logs",
+  "type": "Microsoft.Authorization/policyAssignments",
+  "apiVersion": "2019-09-01",
+  "properties": {
+    "description": "Deploy Azure Kubernetes Service Diagnostics Logs for audit and traceability.",
+    "displayName": "Deploy Azure Kubernetes Service Diagnostics Logs",
+    "metadata": {
+      "assignedBy": "GitHub",
+      "_deployed_by_insight": true
+    },
+    "notScopes": [],
+    "parameters": {
+      "logAnalytics": {
+        "value": "/subscriptions/693bc0de-b583-4f8a-93a4-3375fced6f04/resourcegroups/rg-ae-plat-mgmt-secops/providers/microsoft.operationalinsights/workspaces/law-ae-plat-mgmt-dyohjvbyvxvfy"
+      },
+      "AllMetrics": {
+        "value": "False"
+      },
+      "kube-scheduler": {
+        "value": "False"
+      },
+      "cluster-autoscaler": {
+        "value": "False"
+      }
+    },
+    "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/6c66c325-74c8-42fd-a286-a74b0e2939d8",
+    "scope": null,
+    "enforcementMode": "Default",
+    "nonComplianceMessages": [],
+    "resourceSelectors": [],
+    "overrides": []
+  },
+  "location": null,
+  "identity": {
+    "type": "SystemAssigned"
+  }
+}

@@ -1,0 +1,173 @@
+---
+name: deploy-firewall
+
+on:
+  workflow_call:
+    inputs:
+      artifactName:
+        required: true
+        type: string
+        default: artifact
+      environmentName:
+        required: true
+        type: string
+      location:
+        required: true
+        type: string
+      managementGroupId:
+        type: string
+      subscriptionId:
+        type: string
+      configKey:
+        required: true
+        type: string
+      moduleName:
+        required: true
+        type: string
+      deploymentLevel:
+        type: string
+        default: managementGroup
+      resourceGroupName:
+        type: string
+      whatIf:
+        type: boolean
+        default: false
+      updateMode:
+        type: string
+        default: 'Auto check for IP Groups updates and run Firewall Policy'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    name: deploy
+    environment: ${{ inputs.environmentName }}
+    runs-on: ubuntu-latest
+    continue-on-error: false
+    steps:
+      - name: Checkout ipGroups.bicep (For Change Detection)
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0 # Ensure full history for paths-filter
+          sparse-checkout: |
+            ipGroups.bicep
+
+      # Assumes you have already checked out the repo using actions/checkout@v5
+      - name: Automatic Change Detection
+        id: automatic_changes
+        if: ${{ inputs.updateMode == 'Auto check for IP Groups updates and run Firewall Policy' }}
+        run: |
+          echo "🛠 Automatic Change Detection: Checking for changes in ipGroups.bicep"
+          if [ "${GITHUB_REF##*/}" = "main" ]; then
+            echo "Detected build on main branch"
+            if git diff --name-only HEAD^ HEAD | grep -q "ipGroups.bicep"; then
+              echo "ipGroupDeployment=true" >> $GITHUB_ENV
+              echo "Detected changes in ipGroups.bicep (main)"
+            else
+              echo "ipGroupDeployment=false" >> $GITHUB_ENV
+              echo "No changes in ipGroups.bicep (main)"
+            fi
+          else
+            echo "Detected build on feature branch: ${GITHUB_REF##*/}"
+            git fetch origin main
+            if git diff --name-only origin/main HEAD | grep -q "ipGroups.bicep"; then
+              echo "ipGroupDeployment=true" >> $GITHUB_ENV
+              echo "Detected changes in ipGroups.bicep (branch)"
+            else
+              echo "ipGroupDeployment=false" >> $GITHUB_ENV
+              echo "No changes in ipGroups.bicep (branch)"
+            fi
+          fi
+
+      - name: Manual Change Detection
+        run: |
+          echo "🛠 Manual Change Detection: Setting deployment options based on mode"
+          mode="${{ inputs.updateMode }}"
+          echo "mode=${mode}"
+          ipGroupDeployment="${{ env.ipGroupDeployment }}"
+          if [ "${mode}" == "Auto check for IP Groups updates and run Firewall Policy" ]; then
+            echo "Automatic Change Detection already checked for changes in IP Groups"
+            if [ "$ipGroupDeployment" = "true" ]; then
+              echo "firewallPolicyDeployment=true" >> $GITHUB_ENV
+              echo "Detected changes in IP Groups, Firewall Policy will be updated"
+            else
+              echo "firewallPolicyDeployment=false" >> $GITHUB_ENV
+              echo "No changes in IP Groups, Firewall Policy will NOT be updated"
+            fi
+          elif [ "${mode}" == "Force update IP Groups and run Firewall Policy" ]; then
+            echo "ipGroupDeployment=true" >> $GITHUB_ENV
+            echo "firewallPolicyDeployment=true" >> $GITHUB_ENV
+            echo "Forced update of IP Groups and Firewall Policy"
+          elif [ "${mode}" == "Force update IP Groups only" ]; then
+            echo "ipGroupDeployment=true" >> $GITHUB_ENV
+            echo "firewallPolicyDeployment=false" >> $GITHUB_ENV
+            echo "Forced update of IP Groups only, Firewall Policy will NOT be updated"
+          fi
+
+      # Download Artifact, after the automatic change detection and checkout
+      - name: Download Artifact from Build Job
+        uses: actions/download-artifact@v5
+        with:
+          name: ${{ inputs.artifactName }}
+
+      - name: Read Platform Variables
+        uses: pietrobolcato/action-read-yaml@1.1.0
+        id: read-yaml
+        with:
+          config: ${{ github.workspace }}/.github/platform-variables.yml
+
+      - name: Set Platform Variables
+        run: |
+          echo "templateFileKey=${{ inputs.configKey }}.templateFile" >> $GITHUB_ENV
+          echo "templateParameterFileKey=${{ inputs.configKey }}.templateParameterFile" >> $GITHUB_ENV
+
+      # Azure Login
+      - name: Az Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          enable-AzPSSession: true
+
+      # Deploy
+      - name: Deploy ${{ inputs.moduleName }}
+        uses: Azure/cli@v2.1.0
+        with:
+          inlineScript: |
+            moduleName="${{ inputs.moduleName }}"
+            resourceGroupName="${{ inputs.resourceGroupName }}"
+            location="${{ inputs.location }}"
+            templateFile="${{ steps.read-yaml.outputs[env.templateFileKey] }}"
+            templateParameterFile="${{ steps.read-yaml.outputs[env.templateParameterFileKey] }}"
+
+            moduleNameSanitized=$(echo "$moduleName" | sed 's/ /_/g')
+            DEPLOYMENTJOBID="alz-${moduleNameSanitized}-${{ github.run_number }}"
+
+            additionalParams=""
+            if [ "${{ env.ipGroupDeployment }}" == "true" ]; then
+              additionalParams="--parameters ipGroupDeployment=true"
+              echo "✅ IP groups will be updated"
+              echo "⚠️ IP groups deploy can take a long time to complete. The pipeline will fail if the deployment takes longer than 60 minutes but the deployment will continue in Azure. Check the Azure Portal for the status of the deployment."
+            fi
+
+            if [ "${{ env.firewallPolicyDeployment }}" == "false" ]; then
+              additionalParams="$additionalParams --parameters azFirewallPolicyDeployment=false"
+              echo "⏩ Firewall Policy will NOT be updated"
+            fi
+
+            if [ ${{inputs.whatIf }} == 'true' ]; then
+              echo "➡️ Azure Firewall Deployment - WhatIf"
+              az account set --subscription ${{ inputs.subscriptionId }}
+              az deployment group what-if -n $DEPLOYMENTJOBID -g $resourceGroupName -f $templateFile -p $templateParameterFile $additionalParams
+            fi
+
+            echo "↗️ Azure Firewall Deployment"
+            az account set --subscription ${{ inputs.subscriptionId }}
+            az deployment group create -n $DEPLOYMENTJOBID -g $resourceGroupName -f $templateFile -p $templateParameterFile $additionalParams
+
+      # Log out of Azure
+      - name: Az Logout
+        run: az logout

@@ -1,0 +1,173 @@
+---
+name: deploy-policy
+
+on:
+  workflow_call:
+    inputs:
+      artifactName:
+        required: true
+        type: string
+        default: artifact
+      environmentName:
+        required: true
+        type: string
+      location:
+        required: true
+        type: string
+      managementGroupId:
+        type: string
+      configKey_policyDefinitions:
+        required: true
+        type: string
+      configKey_policyAssignments:
+        required: true
+        type: string
+      configKey_policyAssignmentsCustom:
+        required: true
+        type: string
+      configKey_policyExemptions:
+        required: true
+        type: string
+      policyExemptions:
+        required: true
+        type: boolean
+      moduleName:
+        required: true
+        type: string
+      whatIf:
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  policy:
+    name: deploy
+    environment: ${{ inputs.environmentName }}
+    runs-on: ubuntu-latest
+    continue-on-error: false
+    steps:
+      # Download Artifact
+      - name: Download Artifact from Build Job
+        uses: actions/download-artifact@v5
+        with:
+          name: ${{ inputs.artifactName }}
+
+      - name: Read Platform Variables
+        uses: pietrobolcato/action-read-yaml@1.1.0
+        id: read-yaml
+        with:
+          config: ${{ github.workspace }}/.github/platform-variables.yml
+
+      - name: Set Platform Variables
+        run: |
+          echo "templateFileKey_policyDefinitions=${{ inputs.configKey_policyDefinitions }}.templateFile" >> $GITHUB_ENV
+          echo "templateParameterFileKey_policyDefinitions=${{ inputs.configKey_policyDefinitions }}.templateParameterFile" >> $GITHUB_ENV
+          echo "templateFileKey_policyAssignments=${{ inputs.configKey_policyAssignments }}.templateFile" >> $GITHUB_ENV
+          echo "templateParameterFileKey_policyAssignments=${{ inputs.configKey_policyAssignments }}.templateParameterFile" >> $GITHUB_ENV
+          echo "templateFileKey_policyAssignmentsCustom=${{ inputs.configKey_policyAssignmentsCustom }}.templateFile" >> $GITHUB_ENV
+          echo "templateParameterFileKey_policyAssignmentsCustom=${{ inputs.configKey_policyAssignmentsCustom }}.templateParameterFile" >> $GITHUB_ENV
+          echo "templateFileKey_policyExemptions=${{ inputs.configKey_policyExemptions }}.templateFile" >> $GITHUB_ENV
+          echo "templateParameterFileKey_policyExemptions=${{ inputs.configKey_policyExemptions }}.templateParameterFile" >> $GITHUB_ENV
+
+      # Azure Login
+      - name: Az Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          enable-AzPSSession: true
+
+      # Policy Definitions
+      - name: Deploy Policy Definitions
+        uses: Azure/cli@v2.1.0
+        with:
+          azcliversion: 2.63.0
+          inlineScript: |
+            managementGroupId="${{ inputs.managementGroupId }}"
+            location="${{ inputs.location }}"
+            templateFile="${{ steps.read-yaml.outputs[env.templateFileKey_policyDefinitions] }}"
+            templateParameterFile="${{ steps.read-yaml.outputs[env.templateParameterFileKey_policyDefinitions] }}"
+            DEPLOYMENTJOBID="alz-policy-defintions-${{ github.run_number }}"
+
+            if [ ${{ inputs.whatIf }} == 'true' ]; then
+              az deployment mg what-if -n $DEPLOYMENTJOBID -m $managementGroupId -l $location -f $templateFile -p $templateParameterFile -x Ignore NoChange Unsupported -r FullResourcePayloads
+              az deployment mg create -n $DEPLOYMENTJOBID -m $managementGroupId -l $location -f $templateFile -p $templateParameterFile
+            else
+              az deployment mg create -n $DEPLOYMENTJOBID -m $managementGroupId -l $location -f $templateFile -p $templateParameterFile
+            fi
+
+      # Policy Assignments
+      - name: Deploy Policy Assignments
+        uses: Azure/cli@v2.1.0
+        with:
+          azcliversion: 2.63.0
+          inlineScript: |
+            managementGroupId="${{ inputs.managementGroupId }}"
+            location="${{ inputs.location }}"
+            templateFile="${{ steps.read-yaml.outputs[env.templateFileKey_policyAssignments] }}"
+            templateParameterFile="${{ steps.read-yaml.outputs[env.templateParameterFileKey_policyAssignments] }}"
+            DEPLOYMENTJOBID="alz-policy-assignments-${{ github.run_number }}"
+
+            if [ ${{ inputs.whatIf }} == 'true' ]; then
+              az deployment mg what-if -n $DEPLOYMENTJOBID -m $managementGroupId -l $location -f $templateFile -p $templateParameterFile -x Ignore NoChange Unsupported -r FullResourcePayloads
+              az deployment mg create -n $DEPLOYMENTJOBID -m $managementGroupId -l $location -f $templateFile -p $templateParameterFile
+            else
+              az deployment mg create -n $DEPLOYMENTJOBID -m $managementGroupId -l $location -f $templateFile -p $templateParameterFile
+            fi
+
+      # Policy Assignments Custom
+      - name: Deploy Policy Assignments Custom
+        uses: Azure/cli@v2.1.0
+        with:
+          azcliversion: 2.63.0
+          inlineScript: |
+            managementGroupId="${{ inputs.managementGroupId }}"
+            location="${{ inputs.location }}"
+            templateFile="${{ steps.read-yaml.outputs[env.templateFileKey_policyAssignmentsCustom] }}"
+            templateParameterFile="${{ steps.read-yaml.outputs[env.templateParameterFileKey_policyAssignmentsCustom] }}"
+            DEPLOYMENTJOBID="alz-policy-assignmentsinsight-${{ github.run_number }}"
+
+            if [ ${{ inputs.whatIf }} == 'true' ]; then
+              az deployment mg what-if -n $DEPLOYMENTJOBID -m $managementGroupId -l $location -f $templateFile -p $templateParameterFile -x Ignore NoChange Unsupported -r FullResourcePayloads
+              az deployment mg create -n $DEPLOYMENTJOBID -m $managementGroupId -l $location -f $templateFile -p $templateParameterFile
+            else
+              az deployment mg create -n $DEPLOYMENTJOBID -m $managementGroupId -l $location -f $templateFile -p $templateParameterFile
+            fi
+
+        # Policy Exemptions
+      - name: Deploy Policy Exemptions
+        if: ${{ inputs.policyExemptions }}
+        uses: Azure/cli@v2.1.0
+        with:
+          azcliversion: 2.63.0
+          inlineScript: |
+            managementGroupId="${{ inputs.managementGroupId }}"
+            location="${{ inputs.location }}"
+            templateFile="${{ steps.read-yaml.outputs[env.templateFileKey_policyExemptions] }}"
+            templateParameterFile="${{ steps.read-yaml.outputs[env.templateParameterFileKey_policyExemptions] }}"
+            DEPLOYMENTJOBID="alz-policy-exemptions-${{ github.run_number }}"
+
+            if [ ${{ inputs.whatIf }} == 'true' ]; then
+              az deployment mg what-if -n $DEPLOYMENTJOBID -m $managementGroupId -l $location -f $templateFile -p $templateParameterFile -x Ignore NoChange Unsupported -r FullResourcePayloads
+              az deployment mg create -n $DEPLOYMENTJOBID -m $managementGroupId -l $location -f $templateFile -p $templateParameterFile
+            else
+              az deployment mg create -n $DEPLOYMENTJOBID -m $managementGroupId -l $location -f $templateFile -p $templateParameterFile
+            fi
+
+      # Run Get-AzurePricingforSolution.ps1
+      - name: Invoke Azure Policy Remediation for non-compliant resources
+        uses: azure/powershell@v2
+        with:
+          inlineScript: |
+            Write-Information "==> Running script..." -InformationAction Continue
+            ./scripts/Invoke-AzurePolicyRemediationDINE.ps1
+          azPSVersion: 'latest'
+
+      # Log out of Azure
+      - name: Az Logout
+        run: az logout

@@ -1,0 +1,41 @@
+---
+name: '$(Date:ddMMyy).$(Rev:rr)-Platform Landing Zones'
+
+pool:
+  vmImage: ubuntu-latest
+
+trigger: none
+
+pr:
+  autoCancel: true
+  branches:
+    include:
+      - main
+
+# Variables - Variables template file.
+variables:
+  - template: variables/platform-variables.yml
+
+stages:
+  # Build Artifact
+  - template: templates/build.yml
+    parameters:
+      workingDirectory: $(Pipeline.Workspace)
+      artifactName: infrastructure
+
+  # Deploy Management Groups
+  - template: templates/deploy_Default.yml
+    parameters:
+      jobId: $(build.buildId)
+      dependsOn: [build] # This build stage is hardcoded in build.yml
+      workingDirectory: infrastructure
+      templateFile: $(deploy_ManagementGroups.templateFile)
+      templateParameterFile: $(deploy_ManagementGroups.templateParameterFile)
+      deploymentLevel: 'tenant'
+      moduleName: 'Management Groups'
+      jobName: 'Management_Groups'
+      whatIf: false
+      serviceConnection: $(platformServiceConnection_ManagementGroups)
+      environmentName: platform-managementGroup
+      location: $(location)
+      managementGroupId: $(rootMg)

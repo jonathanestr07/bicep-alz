@@ -1,0 +1,11 @@
+"Name","DisplayName","Description","Metadata","ExemptionCategory","ExpiresOn","AssignmentScopeValidation","PolicyAssignmentId","PolicyDefinitionReferenceIds"
+"Deploy-ISM-Protected","Audit Australian Government ISM PROTECTED","Policy Exemption for Australian Government ISM PROTECTED.","version=1.0.0;
+category=Security","Waiver","2024-12-31","Default","/providers/microsoft.management/managementgroups/mg-alz1-landingzones/providers/microsoft.authorization/policyassignments/deploy-ism-protected","System.Object[]"
+"Deploy-Azure-CIS","Audit Azure Foundations CIS Benchmark v1.4.0","Policy Exemption for Azure Foundations CIS Benchmark v1.4.0","version=1.0.0;
+category=Security","Waiver","2024-12-31","Default","/providers/microsoft.management/managementgroups/mg-alz1-landingzones/providers/microsoft.authorization/policyassignments/deploy-azure-cis","System.Object[]"
+"Deploy-ASC-Monitoring","Enable Monitoring in Microsoft Defender for Cloud","Policy Exemption for Enable Monitoring in Microsoft Defender for Cloud.","version=1.0.0;
+category=Security","Waiver","2024-12-31","Default","/providers/microsoft.management/managementgroups/mg-alz1/providers/microsoft.authorization/policyassignments/deploy-asc-monitoring","System.Object[]"
+"Deploy-ISO-27001-2013","Audit ISO 27001:2013","Policy Exemption for Audit ISO 27001:2013","version=1.0.0;
+category=Security","Waiver","2024-12-31","Default","/providers/microsoft.management/managementgroups/mg-alz1-landingzones/providers/microsoft.authorization/policyassignments/deploy-iso-27001-2013","System.Object[]"
+"Deploy-NIST-800-53","Audit NIST SP 800-53 Rev. 5","Policy Exemption for NIST SP 800-53 Rev. 5.","version=1.0.0;
+category=Security","Waiver","2024-12-31","Default","/providers/microsoft.management/managementgroups/mg-alz1-landingzones/providers/microsoft.authorization/policyassignments/deploy-nist-800-53","System.Object[]"

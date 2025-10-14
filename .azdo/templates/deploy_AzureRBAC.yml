@@ -1,0 +1,126 @@
+parameters:
+  - name: dependsOn
+    type: object
+    default: []
+  - name: condition
+    default: true
+  - name: serviceConnection
+    type: string
+  - name: workingDirectory
+    type: string
+    default: artifact
+  - name: environmentName
+    type: string
+  - name: location
+    type: string
+  - name: managementGroupId
+    type: string
+  - name: templateFile_roleDefinitions
+    type: string
+  - name: templateFile_roleAssignments
+    type: string
+  - name: templateParameterFile_roleDefinitions
+    type: string
+  - name: templateParameterFile_roleAssignments
+    type: string
+  - name: moduleName
+    type: string
+  - name: whatIf
+    type: boolean
+    default: false
+  - name: deploymentLevel
+    type: string
+    default: managementGroup
+  - name: jobId
+    type: string
+    default: '1'
+  - name: jobName
+    type: string
+    default: 'Deploy'
+  - name: enableRoleAssignments
+    type: boolean
+    default: true
+
+stages:
+  - stage: ${{ parameters.jobName }}
+    displayName: Deploy ${{ parameters.moduleName }}
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+    dependsOn: ${{ parameters.dependsOn }}
+    jobs:
+      - deployment: Deploy
+        displayName: Deploy
+        environment: ${{ parameters.environmentName }}
+        variables:
+          - name: sourceDirectory
+            value: '$(Pipeline.Workspace)/${{ parameters.workingDirectory }}/s'
+        pool:
+          vmImage: ubuntu-latest
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                # Set Partner Admin Link (PAL)
+                - task: AzureCLI@2
+                  displayName: Set PAL
+                  inputs:
+                    azureSubscription: ${{ parameters.serviceConnection }}
+                    scriptType: pscore
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      az extension add --name managementpartner
+                      az managementpartner update --partner-id 1158331 || az managementpartner create --partner-id 1158331
+
+                # Role Definitions
+                - task: AzureCLI@2
+                  displayName: Deploy Custom Role Definitions
+                  name: roleDefinitions
+                  inputs:
+                    azureSubscription: ${{ parameters.serviceConnection }}
+                    scriptType: 'bash'
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      az config set bicep.use_binary_from_path=false
+                      managementGroupId="${{ parameters.managementGroupId }}"
+                      location="${{ parameters.location }}"
+                      src_templateFile="${{ parameters.templateFile_roleDefinitions }}"
+                      templateFile="$(sourceDirectory)${src_templateFile:1}"
+                      src_templateParameterFile="${{ parameters.templateParameterFile_roleDefinitions }}"
+                      templateParameterFile="$(sourceDirectory)${src_templateParameterFile:1}"
+
+                      DEPLOYMENTJOBID="alz-role-definitions-${{ parameters.jobId }}"
+
+                      if [ ${{ parameters.whatIf }} == 'true' ]; then
+                        az deployment mg what-if -n $DEPLOYMENTJOBID -m $managementGroupId -l $location -f $templateFile -p $templateParameterFile -x Ignore NoChange Unsupported -r FullResourcePayloads
+                        az deployment mg create -n $DEPLOYMENTJOBID -m $managementGroupId -l $location -f $templateFile -p $templateParameterFile
+                      else
+                        az deployment mg create -n $DEPLOYMENTJOBID -m $managementGroupId -l $location -f $templateFile -p $templateParameterFile
+                      fi
+                    powerShellErrorActionPreference: 'stop'
+
+                # Role Assignments
+                - task: AzureCLI@2
+                  displayName: Deploy Role Assignments
+                  condition: and(succeeded(), ${{ parameters.enableRoleAssignments }})
+                  name: roleAssignments
+                  inputs:
+                    azureSubscription: ${{ parameters.serviceConnection }}
+                    scriptType: 'bash'
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      az config set bicep.use_binary_from_path=false
+                      managementGroupId="${{ parameters.managementGroupId }}"
+                      location="${{ parameters.location }}"
+                      src_templateFile="${{ parameters.templateFile_roleAssignments }}"
+                      templateFile="$(sourceDirectory)${src_templateFile:1}"
+                      src_templateParameterFile="${{ parameters.templateParameterFile_roleAssignments }}"
+                      templateParameterFile="$(sourceDirectory)${src_templateParameterFile:1}"
+
+                      DEPLOYMENTJOBID="alz-role-${{ parameters.jobId }}"
+
+                      if [ ${{ parameters.whatIf }} == 'true' ]; then
+                        az deployment mg what-if -n $DEPLOYMENTJOBID -m $managementGroupId -l $location -f $templateFile -p $templateParameterFile -x Ignore NoChange Unsupported -r FullResourcePayloads
+                        az deployment mg create -n $DEPLOYMENTJOBID -m $managementGroupId -l $location -f $templateFile -p $templateParameterFile
+                      else
+                        az deployment mg create -n $DEPLOYMENTJOBID -m $managementGroupId -l $location -f $templateFile -p $templateParameterFile
+                      fi
+                    powerShellErrorActionPreference: 'stop'

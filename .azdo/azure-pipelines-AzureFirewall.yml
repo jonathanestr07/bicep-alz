@@ -1,0 +1,70 @@
+---
+name: '$(Date:ddMMyy).$(Rev:rr)-ALZ Azure Firewall Rules'
+
+pool:
+  vmImage: ubuntu-latest
+
+trigger: none
+
+# Parameters - Parameter input files.
+parameters:
+  - name: enablePlatformConn
+    displayName: Enable the Platform Connectivity deployment
+    type: boolean
+    default: false
+  - name: mode
+    displayName: 'Select update mode'
+    type: string
+    values:
+      - Auto check for IP Groups updates and run Firewall Policy
+      - Force update IP Groups and run Firewall Policy
+      - Force update IP Groups only
+    default: Auto check for IP Groups updates and run Firewall Policy
+
+# Variables - Variables template file.
+variables:
+  - template: variables/platform-variables.yml
+
+stages:
+  # Build Artifact
+  - template: templates/build.yml
+    parameters:
+      workingDirectory: $(Pipeline.Workspace)
+      artifactName: infrastructure
+
+  # Deploy Platform Connectivity Landing Zone
+  - template: templates/deploy_Default.yml
+    parameters:
+      jobId: $(build.buildId)
+      condition: and(succeeded(),eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+      dependsOn: [build]
+      deploymentLevel: 'managementGroup'
+      moduleName: 'Platform Connectivity'
+      jobName: 'Platform_Connectivity'
+      workingDirectory: infrastructure
+      serviceConnection: $(platformServiceConnection_PlatformConnectivity)
+      environmentName: platform-connectivity
+      managementGroupId: $(rootMg)
+      location: $(location)
+      templateFile: $(deploy_Platform_Connectivity.templateFile)
+      templateParameterFile: $(deploy_Platform_Connectivity.templateParameterFile)
+      whatIf: true
+      ifBoolean: ${{ parameters.enablePlatformConn }}
+
+  # Deploy Azure Firewall Rules
+  - template: templates/deploy_AzureFirewall.yml
+    parameters:
+      jobId: $(build.buildId)
+      condition: in(dependencies.Platform_Connectivity.result, 'Succeeded', 'Skipped')
+      dependsOn: [Platform_Connectivity]
+      moduleName: 'Azure Firewall Rules'
+      jobName: 'Azure_Firewall'
+      workingDirectory: infrastructure
+      serviceConnection: $(platformServiceConnection_PlatformConnectivity)
+      environmentName: platform-firewall
+      resourceGroupName: $(resourceGroupName_Firewall)
+      location: $(location)
+      templateFile: $(deploy_Firewall_Rules.templateFile)
+      templateParameterFile: $(deploy_Firewall_Rules.templateParameterFile)
+      updateMode: ${{ parameters.mode }}
+      whatIf: true

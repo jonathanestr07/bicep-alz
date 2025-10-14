@@ -1,0 +1,102 @@
+{
+  "name": "Deny-Resource-Delete",
+  "type": "Microsoft.Authorization/policyAssignments",
+  "apiVersion": "2019-09-01",
+  "properties": {
+    "description": "Deny Resource Deletion for identified Azure Resources.",
+    "displayName": "Deny Azure Resource Deletion for specific Azure Resources",
+    "metadata": {
+      "assignedBy": "GitHub",
+      "_deployed_by_insight": true
+    },
+    "notScopes": [],
+    "parameters": {},
+    "policyDefinitionId": "${topLevelManagementGroupResourceId}/providers/Microsoft.Authorization/policySetDefinitions/Deny-Resource-Delete",
+    "scope": null,
+    "enforcementMode": "Default",
+    "nonComplianceMessages": [
+      {
+        "message": "This policy denies the deletion of key Azure Landing Zone Platform Services.",
+        "policyDefinitionReferenceId": "automationAccounts"
+      },
+      {
+        "message": "This policy denies the deletion of key Azure Landing Zone Platform Services.",
+        "policyDefinitionReferenceId": "azureBastion"
+      },
+      {
+        "message": "This policy denies the deletion of key Azure Landing Zone Platform Services.",
+        "policyDefinitionReferenceId": "azureFirewall"
+      },
+      {
+        "message": "This policy denies the deletion of key Azure Landing Zone Platform Services.",
+        "policyDefinitionReferenceId": "connections"
+      },
+      {
+        "message": "This policy denies the deletion of key Azure Landing Zone Platform Services.",
+        "policyDefinitionReferenceId": "eventhubNamespace"
+      },
+      {
+        "message": "This policy denies the deletion of key Azure Landing Zone Platform Services.",
+        "policyDefinitionReferenceId": "expressRouteCircuit"
+      },
+      {
+        "message": "This policy denies the deletion of key Azure Landing Zone Platform Services.",
+        "policyDefinitionReferenceId": "expressRouteGateway"
+      },
+      {
+        "message": "This policy denies the deletion of key Azure Landing Zone Platform Services.",
+        "policyDefinitionReferenceId": "keyVault"
+      },
+      {
+        "message": "This policy denies the deletion of key Azure Landing Zone Platform Services.",
+        "policyDefinitionReferenceId": "loadBalancer"
+      },
+      {
+        "message": "This policy denies the deletion of key Azure Landing Zone Platform Services.",
+        "policyDefinitionReferenceId": "localNetworkGateway"
+      },
+      {
+        "message": "This policy denies the deletion of key Azure Landing Zone Platform Services.",
+        "policyDefinitionReferenceId": "networkSecurityGroup"
+      },
+      {
+        "message": "This policy denies the deletion of key Azure Landing Zone Platform Services.",
+        "policyDefinitionReferenceId": "networkWatchers"
+      },
+      {
+        "message": "This policy denies the deletion of key Azure Landing Zone Platform Services.",
+        "policyDefinitionReferenceId": "publicIpAddresses"
+      },
+      {
+        "message": "This policy denies the deletion of key Azure Landing Zone Platform Services.",
+        "policyDefinitionReferenceId": "recoveryServicesVault"
+      },
+      {
+        "message": "This policy denies the deletion of key Azure Landing Zone Platform Services.",
+        "policyDefinitionReferenceId": "routeTables"
+      },
+      {
+        "message": "This policy denies the deletion of key Azure Landing Zone Platform Services.",
+        "policyDefinitionReferenceId": "storageAccounts"
+      },
+      {
+        "message": "This policy denies the deletion of key Azure Landing Zone Platform Services.",
+        "policyDefinitionReferenceId": "userAssignedIdentity"
+      },
+      {
+        "message": "This policy denies the deletion of key Azure Landing Zone Platform Services.",
+        "policyDefinitionReferenceId": "virtualNetworkGateway"
+      },
+      {
+        "message": "This policy denies the deletion of key Azure Landing Zone Platform Services.",
+        "policyDefinitionReferenceId": "virtualNetworks"
+      }
+    ],
+    "resourceSelectors": [],
+    "overrides": []
+  },
+  "location": null,
+  "identity": {
+    "type": "SystemAssigned"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "Deploy-ISM-Protected",
+  "type": "Microsoft.Authorization/policyExemptions",
+  "apiVersion": "2022-07-01-preview",
+  "properties": {
+    "displayName": "Audit Australian Government ISM PROTECTED",
+    "description": "Policy Exemption for Australian Government ISM PROTECTED.",
+    "metadata": {
+      "version": "1.0.0",
+      "category": "Security"
+    },
+    "exemptionCategory": "Waiver",
+    "expiresOn": "2025-12-31",
+    "assignmentScopeValidation": "Default",
+    "policyAssignmentId": "/providers/microsoft.management/managementgroups/mg-alz-landingzones/providers/microsoft.authorization/policyassignments/deploy-ism-protected",
+    "policyDefinitionReferenceIds": [
+    ]
+  }
+}

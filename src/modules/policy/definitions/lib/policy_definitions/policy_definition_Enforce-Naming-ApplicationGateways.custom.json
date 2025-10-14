@@ -1,0 +1,43 @@
+{
+  "name": "Enforce-Naming-Application-Gateways",
+  "type": "Microsoft.Authorization/policyDefinitions",
+  "apiVersion": "2021-06-01",
+  "scope": null,
+  "properties": {
+    "policyType": "Custom",
+    "mode": "All",
+    "displayName": "Enforce Naming for Application Gateways",
+    "description": "This policy enforces naming for Application Gateways",
+    "metadata": {
+      "version": "1.0.0",
+      "category": "Governance",
+      "source": "https://github.com/Insight-Services-APAC/azure-landing-zones-bicep/",
+      "_deployed_by_insight": true
+    },
+    "parameters": {
+      "namingPrefix": {
+        "type": "string",
+        "metadata": {
+          "description": "The naming prefix for Azure Resources."
+        }
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Network/applicationGateways"
+          },
+          {
+            "field": "name",
+            "notLike": "[parameters('namingPrefix')]"
+          }
+        ]
+      },
+      "then": {
+        "effect": "Deny"
+      }
+    }
+  }
+}

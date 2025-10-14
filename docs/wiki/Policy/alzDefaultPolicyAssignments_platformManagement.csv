@@ -1,0 +1,9 @@
+"Name","DisplayName","Description","PolicyDefinitionId","EnforcementMode","AssignedBy","Scope","NotScopes","Parameters"
+"Deploy-Log-Analytics","Deploy-Log-Analytics","Deploy-Log-Analytics.","/providers/Microsoft.Authorization/policyDefinitions/8e3e61b3-0b32-22d5-4edf-55f87fdb5955","DoNotEnforce","","*"," ","effect.value=DeployIfNotExists;
+workspaceName.value=${topLevelManagementGroupPrefix}-la;
+automationAccountName.value=${topLevelManagementGroupPrefix}-automation;
+workspaceRegion.value=${defaultRegion};
+automationRegion.value=${defaultRegion};
+dataRetention.value=30;
+sku.value=pergb2018;
+rgName.value=${topLevelManagementGroupPrefix}-mgmt"

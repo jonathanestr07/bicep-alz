@@ -1,0 +1,67 @@
+# Management Group
+deploy_Management_Groups:
+  templateFile: ./src/modules/managementGroups/managementGroups.bicep
+  templateParameterFile: ./src/configuration/platform/managementGroups.bicepparam
+
+# Azure Subscriptions
+## Connectivity
+deploy_Platform_Connectivity:
+  templateFile: ./src/orchestration/platformConnectivity/platformConnectivity-hub.bicep
+  templateParameterFile: ./src/configuration/platform/platformConnectivity-hub.bicepparam
+
+## Management
+deploy_Platform_Management:
+  templateFile: ./src/orchestration/platformManagement/platformManagement.bicep
+  templateParameterFile: ./src/configuration/platform/platformManagement.bicepparam
+
+## Identity
+deploy_Platform_Identity:
+  templateFile: ./src/orchestration/platformIdentity/platformIdentity.bicep
+  templateParameterFile: ./src/configuration/platform/platformIdentity.bicepparam
+
+# Site-to-Site Connectivity
+deploy_Platform_Connectivity_SiteToSite:
+  templateFile: ./src/modules/vpnConnectivity/vpnConnectivity-hub.bicep
+  templateParameterFile: ./src/configuration/platform/vpnConnectivity-hub.bicepparam
+
+# Azure Firewall Rules
+deploy_Firewall_Rules:
+  templateFile: ./src/modules/azFirewallRules/azFirewallRules.bicep
+  templateParameterFile: ./src/configuration/platform/azFirewallRules.bicepparam
+
+# Azure Policy
+## Definitions
+deploy_Policy_Definitions:
+  templateFile: ./src/modules/policy/definitions/customPolicyDefinitions.bicep
+  templateParameterFile: ./src/configuration/policy/definitions.Custom.bicepparam
+
+## Assignments
+deploy_Policy_Assignments:
+  templateFile: ./src/modules/policy/assignments/alzDefault/alzDefaultPolicyAssignments.bicep
+  templateParameterFile: ./src/configuration/policy/assignments.ALZDefault.bicepparam
+
+## Assignments - Custom
+deploy_Policy_Assignments_Custom:
+  templateFile: ./src/modules/policy/assignments/custom/customPolicyAssignments.bicep
+  templateParameterFile: ./src/configuration/policy/assignments.Custom.bicepparam
+
+## Assignments - Exemptions
+deploy_Policy_Exemptions:
+  templateFile: ./src/modules/policy/exemptions/custom/customPolicyExemptions.bicep
+  templateParameterFile: ./src/configuration/policy/exemptions.Custom.bicepparam
+
+# Roles
+## Definitions
+deploy_Role_Definitions:
+  templateFile: ./src/modules/customRoleDefinitions/customRoleDefinitions.bicep
+  templateParameterFile: ./src/configuration/platform/customRoleDefinitions.bicepparam
+
+## Assignments
+deploy_Role_Assignments:
+  templateFile: ./src/modules/roleAssignments/roleAssignments.bicep
+  templateParameterFile: ./src/configuration/platform/roleAssignments.bicepparam
+
+# Privileged Identity Management
+deploy_PIM:
+  templateFile: ./src/orchestration/privilegedIdentityManagement/privilegedIdentityManagement.bicep
+  templateParameterFile: ./src/configuration/platform/privilegedIdentityManagement.bicepparam

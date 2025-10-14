@@ -1,0 +1,117 @@
+{
+  "EnforceNamingAppGwy": {
+    "parameters": {
+      "namingPrefix": {
+        "value": "[[parameters('AppGwyNamingPrefix')]"
+      }
+    }
+  },
+  "EnforceNamingAutomation": {
+    "parameters": {
+      "namingPrefix": {
+        "value": "[[parameters('AutomationNamingPrefix')]"
+      }
+    }
+  },
+  "EnforceNamingBastion": {
+    "parameters": {
+      "namingPrefix": {
+        "value": "[[parameters('BastionNamingPrefix')]"
+      }
+    }
+  },
+  "EnforceNamingExpressRouteCircuit": {
+    "parameters": {
+      "namingPrefix": {
+        "value": "[[parameters('ExpressRouteCircuitNamingPrefix')]"
+      }
+    }
+  },
+  "EnforceNamingKeyVault": {
+    "parameters": {
+      "namingPrefix": {
+        "value": "[[parameters('KeyVaultNamingPrefix')]"
+      }
+    }
+  },
+  "EnforceNamingLoadBalancers": {
+    "parameters": {
+      "namingPrefix": {
+        "value": "[[parameters('InternalLoadBalancerNamingPrefix')]"
+      },
+      "namingPrefix1": {
+        "value": "[[parameters('ExternalLoadBalancerNamingPrefix')]"
+      }
+    }
+  },
+  "EnforceNamingLocalNetworkGateway": {
+    "parameters": {
+      "namingPrefix": {
+        "value": "[[parameters('LocalNetworkGatewayNamingPrefix')]"
+      }
+    }
+  },
+  "EnforceNamingLogAnalyticsWorkspaces": {
+    "parameters": {
+      "namingPrefix": {
+        "value": "[[parameters('LogAnalyticsWorkspaceNamingPrefix')]"
+      }
+    }
+  },
+  "EnforceNamingManagementGroups": {
+    "parameters": {
+      "namingPrefix": {
+        "value": "[[parameters('ManagementGroupNamingPrefix')]"
+      }
+    }
+  },
+  "EnforceNamingNetworkSecurityGroup": {
+    "parameters": {
+      "namingPrefix": {
+        "value": "[[parameters('NetworkSecurityGroupNamingPrefix')]"
+      }
+    }
+  },
+  "EnforceNamingPublicIP": {
+    "parameters": {
+      "namingPrefix": {
+        "value": "[[parameters('PublicIpNamingPrefix')]"
+      }
+    }
+  },
+  "EnforceNamingRouteTables": {
+    "parameters": {
+      "namingPrefix": {
+        "value": "[[parameters('RouteTableNamingPrefix')]"
+      }
+    }
+  },
+  "EnforceNamingStorageAccounts": {
+    "parameters": {
+      "namingPrefix": {
+        "value": "[[parameters('StorageAccountNamingPrefix')]"
+      }
+    }
+  },
+  "EnforceNamingSubscription": {
+    "parameters": {
+      "namingPrefix": {
+        "value": "[[parameters('SubscriptionNamingPrefix')]"
+      }
+    }
+  },
+  "EnforceNamingVirtualNetworkGateways": {
+    "parameters": {
+      "namingPrefix": {
+        "value": "[[parameters('VirtualNetworkGwyNamingPrefix')]"
+      }
+    }
+  },
+  "EnforceNamingVirtualNetworks": {
+    "parameters": {
+      "namingPrefix": {
+        "value": "[[parameters('VirtualNetworkNamingPrefix')]"
+      }
+    }
+  }
+}

@@ -1,0 +1,120 @@
+
+var policyAssignmentAzFWDiagnosticAssign = {
+	definitionId: '${topLevelManagementGroupPrefix}-plat-connectivity${topLevelManagementGroupSuffix}/providers/Microsoft.Authorization/policyDefinitions/
+	libDefinition: loadJsonContent('../lib/policy_assignments_custom/policy_assignment_deploy_AzureFirewallDiagnosticsResourceSpecific.Synergy.tmpl.json)
+}
+
+var policyAssignmentDenyAzureResources = {
+	definitionId: '/providers/Microsoft.Authorization/policyDefinitions/6c112d4e-5bc7-47ae-a041-ea2d9dccd749'
+	libDefinition: loadJsonContent('../lib/policy_assignments_custom/policy_assignment_es_deny_azure_resources.tmpl.json')
+}
+
+var policyAssignmentAppendInboundNSGRule = {
+	definitionId: '${topLevelManagementGroupResourceId}/providers/Microsoft.Authorization/policyDefinitions/Append-NSG-Rule'
+	libDefinition: loadJsonContent('../lib/policy_assignments_custom/policy_assignment_append_inbound_nsg_rule.custom.tmpl.json')
+}
+
+var policyAssignmentAppendOutboundNSGRule = {
+	definitionId: '${topLevelManagementGroupResourceId}/providers/Microsoft.Authorization/policyDefinitions/Append-NSG-Rule'
+	libDefinition: loadJsonContent('../lib/policy_assignments_custom/policy_assignment_append_outbound_nsg_rule.custom.tmpl.json')
+}
+
+var policyAssignmentAppendUDRRoute = {
+	definitionId: '${topLevelManagementGroupResourceId}/providers/Microsoft.Authorization/policyDefinitions/Append-UDR-Route'
+	libDefinition: loadJsonContent('../lib/policy_assignments_custom/policy_assignment_append_udr_route.custom.tmpl.json')
+}
+
+var policyAssignmentDenyAppGWWithoutWAF = {
+	definitionId: '${topLevelManagementGroupResourceId}/providers/Microsoft.Authorization/policyDefinitions/Deny-AppGW-Without-WAF'
+	libDefinition: loadJsonContent('../lib/policy_assignments_custom/policy_assignment_deny_appgw_without_waf.custom.tmpl.json')
+}
+
+var policyAssignmentDenyResourceDelete = {
+	definitionId: '${topLevelManagementGroupResourceId}/providers/Microsoft.Authorization/policySetDefinitions/Deny-Resource-Delete'
+	libDefinition: loadJsonContent('../lib/policy_assignments_custom/policy_assignment_deny_resource_deletion.custom.tmpl.json')
+}
+
+var policyAssignmentDeployAutomanageCustom = {
+	definitionId: '/providers/Microsoft.Authorization/policyDefinitions/b025cfb4-3702-47c2-9110-87fe0cfcc99b'
+	libDefinition: loadJsonContent('../lib/policy_assignments_custom/policy_assignment_deploy_automanage_custom_config.custom.tmpl.json')
+}
+
+var policyAssignmentDeployAzureCIS = {
+	definitionId: '/providers/Microsoft.Authorization/policySetDefinitions/c3f5c4d9-9a1d-4a99-85c0-7f93e384d5c5'
+	libDefinition: loadJsonContent('../lib/policy_assignments_custom/policy_assignment_deploy_azure_cis_1.4.0.custom.tmpl.json')
+}
+
+var policyAssignmentEnforceCompliantAPIM = {
+	definitionId: '${topLevelManagementGroupResourceId}/providers/Microsoft.Authorization/policySetDefinitions/Enforce-Compliant-APIM'
+	libDefinition: loadJsonContent('../lib/policy_assignments_custom/policy_assignment_deploy_compliant_apim.custom.tmpl.json')
+}
+
+var policyAssignmentDeployActivityLogSta = {
+	definitionId: '${topLevelManagementGroupResourceId}/providers/Microsoft.Authorization/policyDefinitions/Deploy-Diagnostics-ActivityLog-Storage'
+	libDefinition: loadJsonContent('../lib/policy_assignments_custom/policy_assignment_deploy_diagnostics_activity_log_storage.custom.tmpl.json')
+}
+
+var policyAssignmentDeployDNSZoneLink = {
+	definitionId: '${topLevelManagementGroupResourceId}/providers/Microsoft.Authorization/policyDefinitions/Deploy-DNS-Zone-Vnet-Link'
+	libDefinition: loadJsonContent('../lib/policy_assignments_custom/policy_assignment_deploy_dns_zone_link.custom.tmpl.json')
+}
+
+var policyAssignmentDeployGuestConfigPolicy = {
+	definitionId: '/providers/Microsoft.Authorization/policySetDefinitions/2b0ce52e-301c-4221-ab38-1601e2b4cee3'
+	libDefinition: loadJsonContent('../lib/policy_assignments_custom/policy_assignment_deploy_guest_config_policies.custom.tmpl.json')
+}
+
+var policyAssignmentDeployISMProtected = {
+	definitionId: '/providers/Microsoft.Authorization/policySetDefinitions/27272c0b-c225-4cc3-b8b0-f2534b093077'
+	libDefinition: loadJsonContent('../lib/policy_assignments_custom/policy_assignment_deploy_ism_protected.custom.tmpl.json')
+}
+
+var policyAssignmentDeployISO270012013 = {
+	definitionId: '/providers/Microsoft.Authorization/policySetDefinitions/89c6cddc-1c73-4ac1-b19c-54d1a15a42f2'
+	libDefinition: loadJsonContent('../lib/policy_assignments_custom/policy_assignment_deploy_iso_27001_2013.custom.tmpl.json')
+}
+
+var policyAssignmentDeployNIST80053 = {
+	definitionId: '/providers/Microsoft.Authorization/policySetDefinitions/179d1daa-458f-4e47-8086-2a68d0d6c38f'
+	libDefinition: loadJsonContent('../lib/policy_assignments_custom/policy_assignment_deploy_nist_800_53.custom.tmpl.json')
+}
+
+var policyAssignmentDeployFlowLogs = {
+	definitionId: '/providers/Microsoft.Authorization/policyDefinitions/0db34a60-64f4-4bf6-bd44-f95c16cf34b9'
+	libDefinition: loadJsonContent('../lib/policy_assignments_custom/policy_assignment_deploy_nsg_flow_logs.custom.tmpl.json')
+}
+
+var policyAssignmentDeployServiceHealth = {
+	definitionId: '${topLevelManagementGroupResourceId}/providers/Microsoft.Authorization/policyDefinitions/Deploy-ServiceHealthAlert'
+	libDefinition: loadJsonContent('../lib/policy_assignments_custom/policy_assignment_deploy_service_health_alert.custom.tmpl.json')
+}
+
+var policyAssignmentDeployUpdateManager = {
+	definitionId: '${topLevelManagementGroupResourceId}/providers/Microsoft.Authorization/policySetDefinitions/Deploy-Azure-Update-Manager'
+	libDefinition: loadJsonContent('../lib/policy_assignments_custom/policy_assignment_deploy_update_manager.custom.tmpl.json')
+}
+
+var policyAssignmentDeployVMAMAArc = {
+	definitionId: '/providers/Microsoft.Authorization/policySetDefinitions/2b00397d-c309-49c4-aa5a-f0b2c5bc6321'
+	libDefinition: loadJsonContent('../lib/policy_assignments_custom/policy_assignment_deploy_vm_ama_arc.custom.tmpl.json')
+}
+
+var policyAssignmentDeployVMAMAAzure = {
+	definitionId: '/providers/Microsoft.Authorization/policySetDefinitions/924bfe3a-762f-40e7-86dd-5c8b95eb09e6'
+	libDefinition: loadJsonContent('../lib/policy_assignments_custom/policy_assignment_deploy_vm_ama_azure.custom.tmpl.json')
+}
+
+var policyAssignmentEnforceGovernance = {
+	definitionId: '${topLevelManagementGroupResourceId}/providers/Microsoft.Authorization/policySetDefinitions/Enforce-Guardrails-Governance'
+	libDefinition: loadJsonContent('../lib/policy_assignments_custom/policy_assignment_enforce_governance.custom.tmpl.json')
+}
+
+var policyAssignmentEnforceNamingStandards = {
+	definitionId: '${topLevelManagementGroupResourceId}/providers/Microsoft.Authorization/policySetDefinitions/Enforce-Naming-Standards'
+	libDefinition: loadJsonContent('../lib/policy_assignments_custom/policy_assignment_enforce_naming_standards.custom.tmpl.json')
+}
+
+var policyAssignmentDeployAKSLogs = {
+  definitionId: '/providers/Microsoft.Authorization/policyDefinitions/6c66c325-74c8-42fd-a286-a74b0e2939d8'
+  libDefinition: loadJsonContent('../lib/policy_assignments_custom/policy_assignment_deploy_aks_logs.custom.tmpl.json')
+}

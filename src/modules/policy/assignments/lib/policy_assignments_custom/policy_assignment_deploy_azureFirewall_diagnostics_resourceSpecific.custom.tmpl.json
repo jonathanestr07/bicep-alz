@@ -1,0 +1,39 @@
+{
+  "name": "Deploy-AzFw-Diag-Res",
+  "type": "Microsoft.Authorization/policyAssignments",
+  "apiVersion": "2019-09-01",
+  "properties": {
+    "description": "Resource logs should be enabled to track activities and events that take place on Azure Firewall to resource specific tables in Logs Analytics to give you visibility and insights into any changes that occur.",
+    "displayName": "Enable allLogs category group resource logging (resource specific) for Azure Firewall to Log Analytics",
+    "metadata": {
+      "assignedBy": "Github Actions",
+      "_deployed_by_insight": false
+    },
+    "notScopes": [],
+    "parameters": {
+      "logAnalytics": {
+        "value": "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/${topLevelManagementGroupPrefix}-mgmt/providers/Microsoft.OperationalInsights/workspaces/${topLevelManagementGroupPrefix}-la"
+      }
+    },
+    "policyDefinitionId": "${topLevelManagementGroupResourceId}/providers/Microsoft.Authorization/policyDefinitions/Deploy-AzFw-Diag-Res",
+    "scope": [],
+    "enforcementMode": "Default",
+    "nonComplianceMessages": [],
+    "resourceSelectors": [
+      {
+        "name": "resourceTypeSelector",
+        "selectors": [
+          {
+            "kind": "resourceType",
+            "in": ["Microsoft.Network/azureFirewalls"]
+          }
+        ]
+      }
+    ],
+    "overrides": []
+  },
+  "location": null,
+  "identity": {
+    "type": "SystemAssigned"
+  }
+}

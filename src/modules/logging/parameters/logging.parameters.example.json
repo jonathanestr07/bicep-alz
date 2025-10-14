@@ -1,0 +1,68 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "logAnalyticsWorkspaceName": {
+      "value": "alz-log-analytics"
+    },
+    "logAnalyticsWorkspaceLocation": {
+      "value": "australiaeast"
+    },
+    "logAnalyticsWorkspaceSkuName": {
+      "value": "PerGB2018"
+    },
+    "logAnalyticsWorkspaceLogRetentionInDays": {
+      "value": 90
+    },
+    "logAnalyticsWorkspaceSolutions": {
+      "value": ["SecurityInsights"]
+    },
+    "dataCollectionRuleVMInsightsName": {
+      "value": "alz-ama-vmi-dcr"
+    },
+    "dataCollectionRuleChangeTrackingName": {
+      "value": "alz-ama-ct-dcr"
+    },
+    "dataCollectionRuleMDFCSQLName": {
+      "value": "alz-ama-mdfcsql-dcr"
+    },
+    "userAssignedManagedIdentityName": {
+      "value": "alz-umi-identity"
+    },
+    "automationAccountName": {
+      "value": "alz-automation-account"
+    },
+    "tags": {
+      "value": {
+        "Environment": "Platform Production"
+      }
+    },
+    "automationAccountLocation": {
+      "value": "australiaeast"
+    },
+    "storageAccountName": {
+      "value": "alzstoraccount001w"
+    },
+    "dataCollectionRuleVMInsightsLock": {
+      "value": {
+        "kind": "None",
+        "notes": "This lock was created by the ALZ Bicep Logging Module."
+      }
+    },
+    "dataCollectionRuleChangeTrackingLock": {
+      "value": {
+        "kind": "None",
+        "notes": "This lock was created by the ALZ Bicep Logging Module."
+      }
+    },
+    "dataCollectionRuleMDFCSQLLock": {
+      "value": {
+        "kind": "None",
+        "notes": "This lock was created by the ALZ Bicep Logging Module."
+      }
+    },
+    "telemetryOptOut": {
+      "value": false
+    }
+  }
+}

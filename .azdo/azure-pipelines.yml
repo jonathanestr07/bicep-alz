@@ -1,0 +1,195 @@
+---
+name: '$(Date:ddMMyy).$(Rev:rr)-Platform Landing Zones'
+
+pool:
+  vmImage: ubuntu-latest
+
+trigger:
+  branches:
+    include:
+      - main
+
+parameters:
+  - name: enableRoleAssignments
+    displayName: Enable Role Assignments deployment
+    type: boolean
+    default: true
+
+  - name: enableSiteToSiteConnectivity
+    displayName: Enable Site to Site Connectivity deployment
+    type: boolean
+    default: false
+
+# Variables - Variables template file.
+variables:
+  - template: variables/platform-variables.yml
+
+stages:
+  # Build Artifact
+  - template: templates/build.yml
+    parameters:
+      workingDirectory: $(Pipeline.Workspace)
+      artifactName: infrastructure
+
+  # Deploy Management Groups
+  - template: templates/deploy_Default.yml
+    parameters:
+      jobId: $(build.buildId)
+      dependsOn: [build] # This build stage is hardcoded in build.yml
+      workingDirectory: infrastructure
+      templateFile: $(deploy_ManagementGroups.templateFile)
+      templateParameterFile: $(deploy_ManagementGroups.templateParameterFile)
+      deploymentLevel: 'tenant'
+      moduleName: 'Management Groups'
+      jobName: 'Management_Groups'
+      whatIf: false
+      serviceConnection: $(platformServiceConnection_ManagementGroups)
+      environmentName: platform-managementGroup
+      location: $(location)
+      managementGroupId: $(rootMg)
+
+  # Deploy Platform Connectivity
+  - template: templates/deploy_Default.yml
+    parameters:
+      jobId: $(build.buildId)
+      dependsOn: [Management_Groups]
+      workingDirectory: infrastructure
+      templateFile: $(deploy_Platform_Connectivity.templateFile)
+      templateParameterFile: $(deploy_Platform_Connectivity.templateParameterFile)
+      deploymentLevel: 'managementGroup'
+      moduleName: 'Platform Connectivity'
+      jobName: 'Platform_Connectivity'
+      whatIf: false
+      serviceConnection: $(platformServiceConnection_PlatformConnectivity)
+      environmentName: platform-connectivity
+      location: $(location)
+      managementGroupId: $(rootMg)
+
+  # Deploy Platform Identity
+  - template: templates/deploy_Default.yml
+    parameters:
+      jobId: $(build.buildId)
+      dependsOn: [Platform_Connectivity]
+      workingDirectory: infrastructure
+      templateFile: $(deploy_Platform_Identity.templateFile)
+      templateParameterFile: $(deploy_Platform_Identity.templateParameterFile)
+      deploymentLevel: 'managementGroup'
+      moduleName: 'Platform Identity'
+      jobName: 'Platform_Identity'
+      whatIf: false
+      serviceConnection: $(platformServiceConnection_Identity)
+      environmentName: platform-identity
+      location: $(location)
+      managementGroupId: $(rootMg)
+
+  # Deploy Platform Management
+  - template: templates/deploy_Default.yml
+    parameters:
+      jobId: $(build.buildId)
+      dependsOn: [Platform_Connectivity]
+      workingDirectory: infrastructure
+      templateFile: $(deploy_Platform_Management.templateFile)
+      templateParameterFile: $(deploy_Platform_Management.templateParameterFile)
+      deploymentLevel: 'managementGroup'
+      moduleName: 'Platform Management'
+      jobName: 'Platform_Management'
+      whatIf: false
+      serviceConnection: $(platformServiceConnection_Management)
+      environmentName: platform-management
+      location: $(location)
+      managementGroupId: $(rootMg)
+
+  # Deploy Role
+  - template: templates/deploy_AzureRBAC.yml
+    parameters:
+      jobId: $(build.buildId)
+      dependsOn: [Platform_Management, Platform_Connectivity, Platform_Identity]
+      workingDirectory: infrastructure
+      moduleName: 'Role'
+      jobName: 'Role'
+      whatIf: false
+      serviceConnection: $(platformServiceConnection_Role)
+      environmentName: platform-role
+      location: $(location)
+      managementGroupId: $(rootMg)
+      templateFile_roleDefinitions: $(deploy_Role_Definitions.templateFile)
+      templateFile_roleAssignments: $(deploy_Role_Assignments.templateFile)
+      templateParameterFile_roleDefinitions: $(deploy_Role_Definitions.templateParameterFile)
+      templateParameterFile_roleAssignments: $(deploy_Role_Assignments.templateParameterFile)
+      enableRoleAssignments: ${{ parameters.enableRoleAssignments }}
+
+  # Deploy Azure PIM
+  - template: templates/deploy_Default.yml
+    parameters:
+      jobId: $(build.buildId)
+      condition: and(succeeded(),eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+      dependsOn: [Role]
+      deploymentLevel: 'managementGroup'
+      moduleName: 'Azure PIM'
+      jobName: 'Azure_PIM'
+      workingDirectory: infrastructure
+      serviceConnection: $(platformServiceConnection_Role)
+      environmentName: platform-pim
+      managementGroupId: $(rootMg)
+      location: $(location)
+      templateFile: $(deploy_PIM.templateFile)
+      templateParameterFile: $(deploy_PIM.templateParameterFile)
+      whatIf: false
+
+  # Deploy Azure Policy
+  - template: templates/deploy_AzurePolicy.yml
+    parameters:
+      jobId: $(build.buildId)
+      dependsOn: [Management_Groups]
+      workingDirectory: infrastructure
+      moduleName: 'Azure Policy'
+      jobName: 'Azure_Policy'
+      whatIf: false
+      serviceConnection: $(platformServiceConnection_Policy)
+      environmentName: platform-policy
+      location: $(location)
+      managementGroupId: $(rootMg)
+      templateFile_policyDefinitions: $(deploy_Policy_Definitions.templateFile)
+      templateFile_policyAssignments: $(deploy_Policy_Assignments.templateFile)
+      templateFile_policyAssignmentsCustom: $(deploy_Policy_Assignments_Custom.templateFile)
+      templateFile_policyExemptions: $(deploy_Policy_Exemptions.templateFile)
+      templateParameterFile_policyDefinitions: $(deploy_Policy_Definitions.templateParameterFile)
+      templateParameterFile_policyAssignments: $(deploy_Policy_Assignments.templateParameterFile)
+      templateParameterFile_policyAssignmentsCustom: $(deploy_Policy_Assignments_Custom.templateParameterFile)
+      templateParameterFile_policyExemptions: $(deploy_Policy_Exemptions.templateParameterFile)
+      policyExemptions: false # Change to true if you have policy exemptions
+
+  # Deploy Site-to-Site Connectivity
+  - template: templates/deploy_Default.yml
+    parameters:
+      jobId: $(build.buildId)
+      dependsOn: [Platform_Connectivity]
+      workingDirectory: infrastructure
+      templateFile: $(deploy_Platform_Connectivity_SiteToSite.templateFile)
+      templateParameterFile: $(deploy_Platform_Connectivity_SiteToSite.templateParameterFile)
+      deploymentLevel: 'resourceGroup'
+      moduleName: 'Site to Site Connectivity'
+      jobName: 'SitetoSite_Connectivity'
+      whatIf: false
+      serviceConnection: $(platformServiceConnection_PlatformConnectivity)
+      environmentName: platform-connectivity
+      location: $(location)
+      resourceGroupName: $(resourceGroupName_SiteToSite)
+      ifBoolean: ${{ parameters.enableSiteToSiteConnectivity }}
+
+  # Deploy Azure Firewall
+  - template: templates/deploy_AzureFirewall.yml
+    parameters:
+      jobId: $(build.buildId)
+      dependsOn: [Platform_Connectivity]
+      workingDirectory: infrastructure
+      templateFile: $(deploy_Firewall_Rules.templateFile)
+      templateParameterFile: $(deploy_Firewall_Rules.templateParameterFile)
+      deploymentLevel: 'resourceGroup'
+      moduleName: 'Azure Firewall Rules'
+      jobName: 'Azure_Firewall'
+      whatIf: false
+      serviceConnection: $(platformServiceConnection_PlatformConnectivity)
+      environmentName: platform-firewall
+      location: $(location)
+      resourceGroupName: $(resourceGroupName_Firewall)

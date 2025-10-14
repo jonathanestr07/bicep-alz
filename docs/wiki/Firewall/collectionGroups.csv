@@ -1,0 +1,8 @@
+"ruleCollectionName","ruleCollectionPriority","ruleCollectionGroup","ruleCollectionGroupKey","ruleCollectionGroupPriority"
+"platform_activeDirectory_network","105","platformRuleCollectionGroup","ruleCollectionGroup_Platform","100"
+"platform_centralRunners_application","506","platformRuleCollectionGroup","ruleCollectionGroup_Platform","100"
+"platform_centralRunners_network","106","platformRuleCollectionGroup","ruleCollectionGroup_Platform","100"
+"platform_core_application","501","platformRuleCollectionGroup","ruleCollectionGroup_Platform","100"
+"platform_core_network","101","platformRuleCollectionGroup","ruleCollectionGroup_Platform","100"
+"platform_externalWeb_application","503","platformRuleCollectionGroup","ruleCollectionGroup_Platform","100"
+"platform_remoteAccess_network","104","platformRuleCollectionGroup","ruleCollectionGroup_Platform","100"

@@ -1,0 +1,307 @@
+---
+name: Release - End to End
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+    inputs:
+      deploySiteToSite:
+        description: 'Deploy Site-to-Site (S2S) connectivity'
+        type: boolean
+        required: false
+        default: false
+      enableRoleAssignments:
+        description: 'Enable Role Assignments deployment'
+        type: boolean
+        default: true
+
+env:
+  PSRULE_DIRECTORY: ./
+  INFRA_WORKING_DIRECTORY: ./
+
+concurrency:
+  group: deploy-alz-platform
+  cancel-in-progress: true
+
+jobs:
+  linting:
+    name: Lint Testing
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: read
+      statuses: write
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+        # Linting
+      - name: Lint Testing
+        uses: super-linter/super-linter@v8
+        env:
+          DEFAULT_BRANCH: 'main'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VALIDATE_JSON: true
+          VALIDATE_MARKDOWN: true
+          VALIDATE_POWERSHELL: true
+          VALIDATE_YAML: true
+          FILTER_REGEX_EXCLUDE: .*/(src/modules/[^/]+|docs/wiki/(Bicep|PS-Rule|Scripts|Pricing|Policy|Firewall)).*\.md$
+
+  psrule-tests-modules:
+    runs-on: ubuntu-latest
+    name: Run PSRule Tests [Modules]
+    permissions:
+      contents: read
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: PSRule >> Modules
+        continue-on-error: true # This is to ensure that the workflow does not stop the next step while the modules are cleaned up
+        uses: ./.github/actions/ps-rule
+        with:
+          option: 'ps-rule.yaml'
+          bicepPath: 'src/modules'
+          path: ${{ env.PSRULE_DIRECTORY }}
+
+  psrule-tests-configuration:
+    runs-on: ubuntu-latest
+    name: Run PSRule Tests [Configuration]
+    permissions:
+      contents: read
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: PSRule >> Configuration
+        continue-on-error: true # Larger bicepparam files fail to expand correctly in PSRule
+        uses: ./.github/actions/ps-rule
+        with:
+          option: 'ps-rule.yaml'
+          bicepPath: 'src/configuration'
+          path: ${{ env.PSRULE_DIRECTORY }}
+
+  pester:
+    runs-on: ubuntu-latest
+    name: Run Pester Tests
+    permissions:
+      contents: read
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Run ./scripts/Test-AzPester.ps1
+        uses: azure/powershell@v2
+        with:
+          inlineScript: |
+            Write-Information "==> Installing needed modules..." -InformationAction Continue
+            Install-Module -Name Pester -Force
+            Import-Module Pester
+            Write-Information "==> Running script..." -InformationAction Continue
+            ./scripts/Test-AzPester.ps1
+          azPSVersion: 'latest'
+
+  generate-doc:
+    name: Generate Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check-Out Repository
+        uses: actions/checkout@v5
+
+      - name: Install Pandoc
+        uses: ./.github/actions/pandoc
+        with:
+          version: 3.1.12.2
+
+      # Run Convert-WikiMarkdowntoWord.ps1
+      - name: Run ./scripts/Convert-WikiMarkdowntoWord.ps1
+        uses: azure/powershell@v2
+        with:
+          inlineScript: |
+            Write-Information "==> Running script..." -InformationAction Continue
+            ./scripts/Convert-WikiMarkdowntoWord.ps1
+          azPSVersion: 'latest'
+
+      # Upload the documentation to the repository
+      - name: Upload Documentation as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Word Documentation
+          path: docs/*.docx
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs:
+      - linting
+      - psrule-tests-configuration
+      - psrule-tests-modules
+      - pester
+    steps:
+      - name: Check-Out Repository
+        uses: actions/checkout@v5
+
+      - name: Copy Files for Artifact Upload
+        run: rsync -av --exclude='build' --exclude={'.vscode/','.ps-rule/','.ps-docs/','*.md'} ./. ./build
+        working-directory: ${{ env.INFRA_WORKING_DIRECTORY }}
+
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v4
+        with:
+          name: infrastructure
+          path: ${{ env.INFRA_WORKING_DIRECTORY }}
+          include-hidden-files: true #Required for .github folder to be uploaded in the artifact
+
+  deploy_Management_Groups:
+    name: Management Groups
+    uses: ./.github/workflows/deploy.yml
+    needs:
+      - build
+    with:
+      artifactName: infrastructure
+      environmentName: 'platform_managementGroup'
+      location: ${{ vars.LOCATION }}
+      moduleName: 'Management Groups'
+      deploymentLevel: 'tenant'
+      configKey: 'deploy_Management_Groups'
+      whatif: false
+    secrets: inherit
+
+  deploy_Platform_Connectivity:
+    name: Platform Connectivity
+    uses: ./.github/workflows/deploy.yml
+    needs:
+      - deploy_Management_Groups
+    with:
+      artifactName: infrastructure
+      environmentName: 'platform_connectivity'
+      location: ${{ vars.LOCATION }}
+      configKey: 'deploy_Platform_Connectivity'
+      moduleName: 'Platform Connectivity'
+      managementGroupId: ${{ vars.MANAGEMENT_GROUP_ID_CONNECTIVITY }}
+    secrets: inherit
+
+  deploy_Platform_Management:
+    name: Platform Management
+    uses: ./.github/workflows/deploy_Management.yml
+    needs:
+      - deploy_Management_Groups
+      - deploy_Platform_Connectivity
+    with:
+      artifactName: infrastructure
+      environmentName: 'platform_management'
+      location: ${{ vars.LOCATION }}
+      configKey: 'deploy_Platform_Management'
+      moduleName: 'Platform Management'
+      managementGroupId: ${{ vars.MANAGEMENT_GROUP_ID_MANAGEMENT }}
+    secrets: inherit
+
+  deploy_Platform_Identity:
+    name: Platform Identity
+
+    uses: ./.github/workflows/deploy.yml
+    needs:
+      - deploy_Management_Groups
+      - deploy_Platform_Connectivity
+    with:
+      artifactName: infrastructure
+      environmentName: 'platform_identity'
+      location: ${{ vars.LOCATION }}
+      configKey: 'deploy_Platform_Identity'
+      moduleName: 'Platform Identity'
+      managementGroupId: ${{ vars.MANAGEMENT_GROUP_ID_IDENTITY }}
+    secrets: inherit
+
+  deploy_AzurePolicy:
+    name: Azure Policy
+    uses: ./.github/workflows/deploy_AzurePolicy.yml
+    needs:
+      - deploy_Management_Groups
+    with:
+      artifactName: infrastructure
+      environmentName: 'platform_policy'
+      location: ${{ vars.LOCATION }}
+      managementGroupId: ${{ vars.MANAGEMENT_GROUP_ID }}
+      configKey_policyDefinitions: 'deploy_Policy_Definitions'
+      configKey_policyAssignments: 'deploy_Policy_Assignments'
+      configKey_policyAssignmentsCustom: 'deploy_Policy_Assignments_Custom'
+      configKey_policyExemptions: 'deploy_Policy_Exemptions'
+      policyExemptions: false
+      whatif: false
+      moduleName: 'Azure Policy'
+    secrets: inherit
+
+  deploy_Role:
+    name: Roles
+    if: always() && !cancelled() && !failure()
+    uses: ./.github/workflows/deploy_AzureRBAC.yml
+    needs:
+      - deploy_Platform_Connectivity
+      - deploy_Platform_Identity
+      - deploy_Platform_Management
+    with:
+      artifactName: infrastructure
+      environmentName: 'platform_role'
+      location: ${{ vars.LOCATION }}
+      managementGroupId: ${{ vars.MANAGEMENT_GROUP_ID }}
+      configKey_roleDefinitions: 'deploy_Role_Definitions'
+      configKey_roleAssignments: 'deploy_Role_Assignments'
+      whatif: false
+      moduleName: 'Roles'
+      enableRoleAssignments: true
+    secrets: inherit
+
+  deploy_PIM:
+    name: Privileged Identity Management
+    if: always() && !cancelled() && !failure()
+    uses: ./.github/workflows/deploy.yml
+    needs:
+      - deploy_Role
+    with:
+      artifactName: infrastructure
+      environmentName: 'platform_role' # Use the same environment as Azure RBAC
+      location: ${{ vars.LOCATION }}
+      managementGroupId: ${{ vars.MANAGEMENT_GROUP_ID }}
+      configKey: 'deploy_PIM'
+      moduleName: 'Azure PIM'
+      whatIf: true
+    secrets: inherit
+
+  deploy_Firewall_Rules:
+    name: Azure Firewall
+    uses: ./.github/workflows/deploy_AzureFirewall.yml
+    needs:
+      - deploy_Platform_Connectivity
+    with:
+      artifactName: infrastructure
+      environmentName: 'platform_firewall'
+      location: ${{ vars.LOCATION }}
+      configKey: 'deploy_Firewall_Rules'
+      moduleName: 'Azure Firewall Rules'
+      subscriptionId: ${{ vars.PLATFORM_CONN_SUBSCRIPTIONID }}
+      resourceGroupName: 'arg-aue-plat-conn-network'
+      deploymentLevel: 'resourceGroup'
+    secrets: inherit
+
+  deploy_Platform_Connectivity_SiteToSite:
+    if: always() && !cancelled() && !failure() || ${{ inputs.deploySiteToSite }}
+    name: Site-to-Site Connectivity
+    uses: ./.github/workflows/deploy_SiteToSite.yml
+    needs:
+      - deploy_Platform_Connectivity
+    with:
+      artifactName: infrastructure
+      environmentName: 'platform_connectivity'
+      location: ${{ vars.LOCATION }}
+      configKey: 'deploy_Platform_Connectivity_SiteToSite'
+      moduleName: 'Connectivity'
+      resourceGroupName: 'arg-aue-plat-conn-network'
+      deploymentLevel: 'resourceGroup'
+    secrets: inherit

@@ -1,0 +1,60 @@
+---
+name: '$(Date:ddMMyy).$(Rev:rr)-Platform Services - Azure Policy'
+
+pool:
+  vmImage: ubuntu-latest
+
+trigger: none
+
+# Variables - Variables template file.
+variables:
+  - template: variables/platform-variables.yml
+
+stages:
+  # Build Artifact
+  - template: templates/build.yml
+    parameters:
+      workingDirectory: $(Pipeline.Workspace)
+      artifactName: infrastructure
+
+  # Deploy Management Groups
+  - template: templates/deploy_Default.yml
+    parameters:
+      jobId: $(build.buildId)
+      condition: and(succeeded(),eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+      dependsOn: [build]
+      deploymentLevel: 'tenant'
+      moduleName: 'Management Groups'
+      jobName: 'Management_Groups'
+      workingDirectory: infrastructure
+      serviceConnection: $(platformServiceConnection_ManagementGroups)
+      environmentName: platform-managementGroup
+      location: $(location)
+      templateFile: $(deploy_ManagementGroups.templateFile)
+      templateParameterFile: $(deploy_ManagementGroups.templateParameterFile)
+      whatIf: false
+
+  # Deploy Azure Policy
+  - template: templates/deploy_AzurePolicy.yml
+    parameters:
+      jobId: $(build.buildId)
+      condition: and(succeeded(),eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+      dependsOn: [Management_Groups]
+      deploymentLevel: 'managementGroup'
+      moduleName: 'Azure Policy'
+      jobName: 'Azure_Policy'
+      workingDirectory: infrastructure
+      serviceConnection: $(platformServiceConnection_Policy)
+      environmentName: platform-policy
+      managementGroupId: $(rootMg)
+      location: $(location)
+      templateFile_policyDefinitions: $(deploy_Policy_Definitions.templateFile)
+      templateFile_policyAssignments: $(deploy_Policy_Assignments.templateFile)
+      templateFile_policyAssignmentsCustom: $(deploy_Policy_Assignments_Custom.templateFile)
+      templateFile_policyExemptions: $(deploy_Policy_Exemptions.templateFile)
+      templateParameterFile_policyDefinitions: $(deploy_Policy_Definitions.templateParameterFile)
+      templateParameterFile_policyAssignments: $(deploy_Policy_Assignments.templateParameterFile)
+      templateParameterFile_policyAssignmentsCustom: $(deploy_Policy_Assignments_Custom.templateParameterFile)
+      templateParameterFile_policyExemptions: $(deploy_Policy_Exemptions.templateParameterFile)
+      policyExemptions: false # Change to true if you have policy exemptions
+      whatIf: false

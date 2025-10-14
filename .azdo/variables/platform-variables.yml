@@ -1,0 +1,128 @@
+---
+variables:
+  # currencyCode for Azure Retail Price API
+  - name: currencyCode
+    value: AUD
+
+  # Location
+  - name: location
+    value: australiaeast
+
+  # Management Group
+  - name: rootMg
+    value: 'mg-alz'
+  - name: lzMg
+    value: 'mg-alz-landingzones'
+
+  # Service Connections
+  ## Add any additional Service Connection for the platform here and reference them in the appropriate azure-pipelines-X.yml file
+  ## NEVER use one service connection for an entire platform deployment. See High Level Design for why this is important.
+  - name: platformServiceConnection_ManagementGroups
+    value: sp-alz-landingzones # Change this value
+
+  - name: platformServiceConnection_Policy
+    value: sp-alz-landingzones # Change this value, can be same as platformServiceConnection_ManagementGroups per High Level Design
+
+  - name: platformServiceConnection_Role
+    value: sp-alz-landingzones # Change this value, can be same as platformServiceConnection_ManagementGroups per High Level Design
+
+  - name: platformServiceConnection_PlatformConnectivity
+    value: sp-alz-landingzones # Change this value, can NEVER be allowed to be the same as platformServiceConnection_ManagementGroups
+
+  - name: platformServiceConnection_Management
+    value: sp-alz-landingzones # Change this value, can NEVER be allowed to be the same as platformServiceConnection_ManagementGroups
+
+  - name: platformServiceConnection_Identity
+    value: sp-alz-landingzones # Change this value, can NEVER be allowed to be the same as platformServiceConnection_ManagementGroups
+
+  #- name: platformServiceConnection_Firewall
+  #  value: sp-alz-landingzones # Change this value, can be same as platformServiceConnection_PlatformConnectivity
+
+  # Post First Run Deployment Variables
+  ## Change these values to match what is deployed via platform-connectivity stage
+  - name: resourceGroupName_Firewall
+    value: arg-aue-plat-conn-network
+  - name: resourceGroupName_SiteToSite
+    value: arg-aue-plat-conn-network
+
+  # Template and Bicep Parameter Files
+  ## Management Group
+  - name: deploy_ManagementGroups.templateFile
+    value: ./src/modules/managementGroups/managementGroups.bicep
+  - name: deploy_ManagementGroups.templateParameterFile
+    value: ./src/configuration/platform/managementGroups.bicepparam
+
+  ## Azure Subscriptions
+  ### Platform Connectivity Landing Zone
+  - name: deploy_Platform_Connectivity.templateFile
+    value: ./src/orchestration/platformConnectivity/platformConnectivity-hub.bicep
+  - name: deploy_Platform_Connectivity.templateParameterFile
+    value: ./src/configuration/platform/platformConnectivity-hub.bicepparam
+
+  ## Site-to-Site Connectivity
+  - name: deploy_Platform_Connectivity_SiteToSite.templateFile
+    value: ./src/modules/vpnConnectivity/vpnConnectivity-hub.bicep
+  - name: deploy_Platform_Connectivity_SiteToSite.templateParameterFile
+    value: ./src/configuration/platform/vpnConnectivity-hub.bicepparam
+
+  ## Azure Firewall
+  - name: deploy_Firewall_Rules.templateFile
+    value: ./src/modules/azFirewallRules/azFirewallRules.bicep
+  - name: deploy_Firewall_Rules.templateParameterFile
+    value: ./src/configuration/platform/azFirewallRules.bicepparam
+
+  ### Platform Management Landing Zone
+  - name: deploy_Platform_Management.templateFile
+    value: ./src/orchestration/platformManagement/platformManagement.bicep
+  - name: deploy_Platform_Management.templateParameterFile
+    value: ./src/configuration/platform/platformManagement.bicepparam
+
+  ### Platform Identity Landing Zone
+  - name: deploy_Platform_Identity.templateFile
+    value: ./src/orchestration/platformIdentity/platformIdentity.bicep
+  - name: deploy_Platform_Identity.templateParameterFile
+    value: ./src/configuration/platform/platformIdentity.bicepparam
+
+  ## Azure Policy
+  ### Azure Policy Definitions
+  - name: deploy_Policy_Definitions.templateFile
+    value: ./src/modules/policy/definitions/customPolicyDefinitions.bicep
+  - name: deploy_Policy_Definitions.templateParameterFile
+    value: ./src/configuration/policy/definitions.Custom.bicepparam
+
+  ### Azure Policy Assignments
+  - name: deploy_Policy_Assignments.templateFile
+    value: ./src/modules/policy/assignments/alzDefault/alzDefaultPolicyAssignments.bicep
+  - name: deploy_Policy_Assignments.templateParameterFile
+    value: ./src/configuration/policy/assignments.ALZDefault.bicepparam
+
+  ### Azure Policy Assignments - Custom
+  - name: deploy_Policy_Assignments_Custom.templateFile
+    value: ./src/modules/policy/assignments/custom/customPolicyAssignments.bicep
+  - name: deploy_Policy_Assignments_Custom.templateParameterFile
+    value: ./src/configuration/policy/assignments.Custom.bicepparam
+
+  ### Azure Policy Assignments - Exemptions
+  - name: deploy_Policy_Exemptions.templateFile
+    value: ./src/modules/policy/exemptions/custom/customPolicyExemptions.bicep
+  - name: deploy_Policy_Exemptions.templateParameterFile
+    value: ./src/configuration/policy/exemptions.Custom.bicepparam
+
+  ## Azure RBAC
+  ### Role Definitions
+  - name: deploy_Role_Definitions.templateFile
+    value: ./src/modules/customRoleDefinitions/customRoleDefinitions.bicep
+  - name: deploy_Role_Definitions.templateParameterFile
+    value: ./src/configuration/platform/customRoleDefinitions.bicepparam
+
+  ### Role Assignments
+  - name: deploy_Role_Assignments.templateFile
+    value: ./src/modules/roleAssignments/roleAssignments.bicep
+  - name: deploy_Role_Assignments.templateParameterFile
+    value: ./src/configuration/platform/roleAssignments.bicepparam
+
+  ### Azure PIM
+  - name: deploy_PIM.templateFile
+    value: ./src/orchestration/privilegedIdentityManagement/privilegedIdentityManagement.bicep
+  - name: deploy_PIM.templateParameterFile
+    value: ./src/configuration/platform/privilegedIdentityManagement.bicepparam

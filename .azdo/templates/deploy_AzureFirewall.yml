@@ -1,0 +1,175 @@
+parameters:
+  - name: dependsOn
+    type: object
+    default: []
+  - name: condition
+    default: true
+  - name: serviceConnection
+    type: string
+  - name: workingDirectory
+    type: string
+    default: infrastructure
+  - name: environmentName
+    type: string
+  - name: location
+    type: string
+  - name: templateFile
+    type: string
+  - name: templateParameterFile
+    type: string
+  - name: moduleName
+    type: string
+  - name: whatIf
+    type: boolean
+    default: false
+  - name: deploymentLevel
+    type: string
+    default: managementGroup
+  - name: resourceGroupName
+    type: string
+    default: ''
+  - name: managementGroupId
+    type: string
+    default: ''
+  - name: subscriptionId
+    type: string
+    default: ''
+  - name: jobId
+    type: string
+    default: '1'
+  - name: jobName
+    type: string
+    default: 'Deploy'
+  - name: ifBoolean
+    type: boolean
+    default: true
+  - name: updateMode
+    type: string
+    default: 'Auto check for IP Groups updates and run Firewall Policy'
+
+stages:
+  - stage: ${{ parameters.jobName }}
+    displayName: Deploy ${{ parameters.moduleName }}
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+    dependsOn: ${{ parameters.dependsOn }}
+    jobs:
+      - deployment: Deploy
+        condition: ${{ parameters.ifBoolean }}
+        displayName: Deploy
+        environment: ${{ parameters.environmentName }}
+        variables:
+          - name: sourceDirectory
+            value: '$(Pipeline.Workspace)/${{ parameters.workingDirectory }}/s'
+        pool:
+          vmImage: ubuntu-latest
+
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                # Check changes for Azure Firewall deployment
+                - script: |
+                    echo "🛠 Automatic Change Detection: Checking for changes in ipGroups.bicep"
+                    git fetch origin
+                    BASE_BRANCH=$(Build.SourceBranchName)
+                    if [ "$BASE_BRANCH" = "main" ]; then
+                      echo "Detected build on main branch"
+                      if git diff --name-only HEAD^ HEAD | grep -q "ipGroups.bicep"; then
+                        echo "Changes detected in ipGroups.bicep (main)"
+                        echo "##vso[task.setvariable variable=ipGroupDeployment;isOutput=true]true"
+                      else
+                        echo "No changes detected in ipGroups.bicep (main)"
+                        echo "##vso[task.setvariable variable=ipGroupDeployment;isOutput=true]false"
+                      fi
+                    else
+                      echo "Detected build on feature branch ($BASE_BRANCH)"
+                      if git diff --name-only origin/main HEAD | grep -q "ipGroups.bicep"; then
+                        echo "Changes detected in ipGroups.bicep (feature branch)"
+                        echo "##vso[task.setvariable variable=ipGroupDeployment;isOutput=true]true"
+                      else
+                        echo "No changes detected in ipGroups.bicep (feature branch)"
+                        echo "##vso[task.setvariable variable=ipGroupDeployment;isOutput=true]false"
+                      fi
+                    fi
+                  displayName: 'Automatic Change Detection'
+
+                - script: |
+                    echo "🛠 Manual Change Detection: Setting deployment options based on mode"
+                    mode="${{ parameters.updateMode }}"
+                    echo "mode=${mode}"
+                    if [ "${mode}" == "Auto check for IP Groups updates and run Firewall Policy" ]; then
+                      echo "Automatic Change Detection already checked for changes in IP Groups"
+                      echo "firewallPolicyDeployment=true" >> $(Pipeline.Workspace)/firewallPolicyDeployment.env
+                    elif [ "${mode}" == "Force update IP Groups and run Firewall Policy" ]; then
+                      echo "ipGroupDeployment=true" >> $(Pipeline.Workspace)/ipGroupDeployment.env
+                      echo "firewallPolicyDeployment=true" >> $(Pipeline.Workspace)/firewallPolicyDeployment.env
+                    elif [ "${mode}" == "Force update IP Groups only" ]; then
+                      echo "ipGroupDeployment=true" >> $(Pipeline.Workspace)/ipGroupDeployment.env
+                      echo "firewallPolicyDeployment=false" >> $(Pipeline.Workspace)/firewallPolicyDeployment.env
+                    fi
+                    echo "##vso[task.setvariable variable=ipGroupDeployment]$(cat $(Pipeline.Workspace)/ipGroupDeployment.env)"
+                    echo "##vso[task.setvariable variable=firewallPolicyDeployment]$(cat $(Pipeline.Workspace)/firewallPolicyDeployment.env)"
+                  displayName: 'Manual Change Detection'
+
+                # Set Partner Admin Link (PAL)
+                - task: AzureCLI@2
+                  displayName: 'Set PAL'
+                  inputs:
+                    azureSubscription: ${{ parameters.serviceConnection }}
+                    scriptType: pscore
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      az extension add --name managementpartner
+                      az managementpartner update --partner-id 1158331 || az managementpartner create --partner-id 1158331
+
+                # Deploy
+                - task: AzureCLI@2
+                  displayName: 'Deploy ${{ parameters.moduleName }}'
+                  name: ${{ parameters.jobName }}
+                  inputs:
+                    azureSubscription: ${{ parameters.serviceConnection }}
+                    scriptType: 'bash'
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      az config set bicep.use_binary_from_path=false
+                      moduleName="${{ parameters.moduleName }}"
+                      deploymentLevel="${{ parameters.deploymentLevel }}"
+                      location="${{ parameters.location }}"
+                      src_templateFile="${{ parameters.templateFile }}"
+                      templateFile="$(sourceDirectory)${src_templateFile:1}"
+                      src_templateParameterFile="${{ parameters.templateParameterFile }}"
+                      templateParameterFile="$(sourceDirectory)${src_templateParameterFile:1}"
+                      managementGroupId="${{ parameters.managementGroupId }}"
+
+                      resourceGroupName="${{ parameters.resourceGroupName }}"
+
+                      moduleNameSanitized=$(echo "$moduleName" | sed 's/ /_/g')
+                      DEPLOYMENTJOBID="alz-${moduleNameSanitized}-${{ parameters.jobId }}"
+
+                      additionalParams=""
+                      if [ "$(ipGroupDeployment)" == "true" ]; then
+                        additionalParams="--parameters ipGroupDeployment=true"
+                        echo "✅ IP groups will be updated"
+                        echo "⚠️ IP groups deploy can take a long time to complete. The pipeline will fail if the deployment takes longer than 60 minutes but the deployment will continue in Azure. Check the Azure Portal for the status of the deployment."
+                      fi
+
+                      if [ "$(firewallPolicyDeployment)" == "false" ]; then
+                        additionalParams="$additionalParams --parameters azFirewallPolicyDeployment=false"
+                        echo "⏩ Firewall Policy will NOT be updated"
+                      fi
+
+                      if [ -n "${{ parameters.subscriptionId }}" ]; then
+                        echo "👆 Setting subscription to ${{ parameters.subscriptionId }}"
+                        az account set --subscription "${{ parameters.subscriptionId }}"
+                      else
+                        echo "No specific subscription ID provided, using default from service connection"
+                      fi
+
+                      if [ "${{ parameters.whatIf }}" == "true" ]; then
+                        echo "➡️ Azure Firewall Deployment - WhatIf"
+
+                        az deployment group what-if -n "$DEPLOYMENTJOBID" -g "$resourceGroupName" -f "$templateFile" -p "$templateParameterFile" $additionalParams
+                      fi
+
+                      echo "↗️ Azure Firewall Deployment"
+                      az deployment group create -n "$DEPLOYMENTJOBID" -g "$resourceGroupName" -f "$templateFile" -p "$templateParameterFile" $additionalParams

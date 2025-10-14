@@ -1,0 +1,199 @@
+parameters:
+  - name: workingDirectory
+    type: string
+  - name: artifactName
+    type: string
+
+stages:
+  - stage: build
+    displayName: Test and Build
+    jobs:
+      # Run MegaLinter to detect linting and security issues
+      - job: MegaLinter
+        #condition: eq(variables['Build.SourceBranchName'], 'main') # Uncomment this line to run only on main branch, testing should be done on all branches
+        displayName: 'Linting'
+
+        steps:
+          # Checkout repo
+          - checkout: self
+
+          # Pull MegaLinter docker image
+          - script: docker pull oxsecurity/megalinter:v7
+            displayName: Pull MegaLinter Image
+
+          # Run MegaLinter
+          - script: |
+              docker run -v $(System.DefaultWorkingDirectory):/tmp/lint \
+                --env-file <(env | grep -e SYSTEM_ -e BUILD_ -e TF_ -e AGENT_) \
+                -e SYSTEM_ACCESSTOKEN=$(System.AccessToken) \
+                -e GIT_AUTHORIZATION_BEARER=$(System.AccessToken) \
+                oxsecurity/megalinter:v7
+            displayName: Run MegaLinter Linting
+
+          # Upload MegaLinter reports
+          - task: PublishPipelineArtifact@1
+            condition: succeededOrFailed()
+            displayName: Upload MegaLinter reports
+            inputs:
+              targetPath: '$(System.DefaultWorkingDirectory)/megalinter-reports/'
+              artifactName: Linting Report
+
+      - job: PSRule
+        displayName: 'PSRule Validation'
+        #condition: eq(variables['Build.SourceBranchName'], 'main') # Uncomment this line to run only on main branch, testing should be done on all branches
+
+        steps:
+          # Checkout Repo
+          - checkout: self
+            displayName: Check-Out Repository
+            submodules: true
+            clean: true
+            enabled: true
+
+          # Install PSRule.Rules.Azure from the PowerShell Gallery
+          - task: ps-rule-install@2
+            displayName: Install PSRule
+            inputs:
+              module: 'PSRule.Rules.Azure' # Install PSRule.Rules.Azure from the PowerShell Gallery.
+              latest: false # Only install the module if not already installed.
+              prerelease: false # Install stable versions only.
+
+          # Run analysis from JSON files using the `PSRule.Rules.Azure` module and custom rules from `.ps-rule/`.
+          - task: ps-rule-assert@2
+            displayName: Run PSRule [Modules]
+            inputs:
+              inputType: inputPath
+              inputPath: src/modules/ # The path PSRule will look for files to validate.
+              modules: 'PSRule.Rules.Azure,PSRule.Rules.CAF' # Analyze objects using the rules within the PSRule.Rules.Azure PowerShell module.
+              baseline: Azure.Default # The name of a PSRule baseline to use.
+              outputFormat: NUnit3 # Save results to an NUnit report.
+              outputPath: reports/ps-rule-results-modules.xml
+
+          # Run analysis from JSON files using the `PSRule.Rules.Azure` module and custom rules from `.ps-rule/`.
+          - task: ps-rule-assert@2
+            displayName: Run PSRule [Configuration]
+            inputs:
+              inputType: inputPath
+              inputPath: src/configuration/ # The path PSRule will look for files to validate.
+              modules: 'PSRule.Rules.Azure,PSRule.Rules.CAF' # Analyze objects using the rules within the PSRule.Rules.Azure PowerShell module.
+              baseline: Azure.Default # The name of a PSRule baseline to use.
+              outputFormat: NUnit3 # Save results to an NUnit report.
+              outputPath: reports/ps-rule-results-configuration.xml
+
+          # Publish NUnit report as test results
+          - task: PublishTestResults@2
+            displayName: Publish PSRule Results [Modules]
+            inputs:
+              testRunTitle: 'PSRule' # The title to use for the test run.
+              testRunner: NUnit # Import report using the NUnit format.
+              testResultsFiles: 'reports/ps-rule-results-modules.xml' # The previously saved NUnit report.
+
+          # Publish NUnit report as test results
+          - task: PublishTestResults@2
+            displayName: Publish PSRule Results [Configuration]
+            inputs:
+              testRunTitle: 'PSRule' # The title to use for the test run.
+              testRunner: NUnit # Import report using the NUnit format.
+              testResultsFiles: 'reports/ps-rule-results-configuration.xml' # The previously saved NUnit report.
+
+      - job: Build
+        displayName: 'Build'
+        steps:
+          - task: CopyFiles@2
+            displayName: Stage Artifacts
+            inputs:
+              TargetFolder: $(Build.ArtifactStagingDirectory)
+              SourceFolder: ${{ parameters.workingDirectory }}
+              Contents: |
+                **/*
+                !.vscode/**/*
+                !.azdo/**/*
+                !.local/**/*
+                !docs/**/*
+                !.editorconfig
+                !.gitattributes
+                !.gitignore
+                !.prettierrc.json
+                !README.md
+
+          - task: PublishPipelineArtifact@1
+            displayName: Publish Artifacts
+            inputs:
+              artifact: ${{ parameters.artifactName }}
+              targetPath: $(Build.ArtifactStagingDirectory)
+
+      - job: Pester
+        displayName: 'Pester Tests'
+        #condition: eq(variables['Build.SourceBranchName'], 'main') # Uncomment this line to run only on main branch, testing should be done on all branches
+
+        steps:
+          - checkout: self
+            displayName: Check-Out Repository
+            submodules: true
+            clean: true
+            enabled: true
+
+          - task: PowerShell@2
+            displayName: Run Pester Tests
+            inputs:
+              targetType: 'inline'
+              script: |
+                Write-Information "==> Installing needed modules..." -InformationAction Continue
+                Install-Module -Name Pester -Force
+                Import-Module Pester
+                Write-Information "==> Running script..." -InformationAction Continue
+                ./scripts/Test-AzPester.ps1
+              pwsh: true
+
+      - job: generateDoc
+        condition: eq(variables['Build.SourceBranchName'], 'main')
+        displayName: Generate Documentation
+        pool:
+          vmImage: 'ubuntu-latest' # Use Ubuntu as the build agent for this job because Pandoc is easier to install on Ubuntu
+        steps:
+          - checkout: self
+
+          - task: Bash@3
+            displayName: Install Pandoc
+            inputs:
+              targetType: 'inline'
+              script: |
+                PANDOC_VERSION=3.1.12.2
+                wget https://github.com/jgm/pandoc/releases/download/$PANDOC_VERSION/pandoc-$PANDOC_VERSION-1-amd64.deb
+                sudo dpkg -i pandoc-$PANDOC_VERSION-1-amd64.deb
+                sudo apt-get install -f
+
+          - task: PowerShell@2
+            displayName: Run Convert-WikiMarkdowntoWord.ps1
+            inputs:
+              targetType: 'inline'
+              script: |
+                Write-Information "==> Running script..." -InformationAction Continue
+                ./scripts/Convert-WikiMarkdowntoWord.ps1
+              pwsh: true
+
+          # Move .docx files to export directory
+          - task: PowerShell@2
+            displayName: Move .docx files to export directory
+            inputs:
+              targetType: 'inline'
+              script: |
+                $sourcePath = "$(Pipeline.Workspace)/s/docs"
+                $destinationPath = "$(Pipeline.Workspace)/s/docs/topublish"
+
+                # Create the destination directory if it doesn't exist
+                if (-not (Test-Path -Path $destinationPath)) {
+                  New-Item -ItemType Directory -Path $destinationPath
+                }
+
+                # Move .docx files to the destination directory
+                Get-ChildItem -Path $sourcePath -Filter *.docx -Recurse | ForEach-Object {
+                  Move-Item -Path $_.FullName -Destination $destinationPath
+                }
+
+          # Upload the documentation as an artefact
+          - task: PublishPipelineArtifact@1
+            displayName: Upload Documentation as artefact
+            inputs:
+              targetPath: '$(Pipeline.Workspace)/s/docs/topublish' # The directory to copy the files from.
+              artifact: 'Word Documentation' # The name of the artefact to publish.

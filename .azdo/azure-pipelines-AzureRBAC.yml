@@ -1,0 +1,81 @@
+---
+name: '$(Date:ddMMyy).$(Rev:rr)-Platform Services - Azure RBAC'
+
+pool:
+  vmImage: ubuntu-latest
+
+trigger: none
+
+# Parameters - Parameter input files.
+parameters:
+  - name: enableRoleAssignments
+    displayName: Enable Role Assignments deployment
+    type: boolean
+    default: true
+
+# Variables - Variables template file.
+variables:
+  - template: variables/platform-variables.yml
+
+stages:
+  # Build Artifact
+  - template: templates/build.yml
+    parameters:
+      workingDirectory: $(Pipeline.Workspace)
+      artifactName: infrastructure
+
+  # Deploy Management Groups
+  - template: templates/deploy_Default.yml
+    parameters:
+      jobId: $(build.buildId)
+      condition: and(succeeded(),eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+      dependsOn: [build]
+      deploymentLevel: 'tenant'
+      moduleName: 'Management Groups'
+      jobName: 'Management_Groups'
+      workingDirectory: infrastructure
+      serviceConnection: $(platformServiceConnection_ManagementGroups)
+      environmentName: platform-managementGroup
+      location: $(location)
+      templateFile: $(deploy_ManagementGroups.templateFile)
+      templateParameterFile: $(deploy_ManagementGroups.templateParameterFile)
+      whatIf: false
+
+  # Deploy Azure RBAC
+  - template: templates/deploy_AzureRBAC.yml
+    parameters:
+      jobId: $(build.buildId)
+      condition: and(succeeded(),eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+      dependsOn: [Management_Groups]
+      deploymentLevel: 'managementGroup'
+      moduleName: 'Azure RBAC'
+      jobName: 'Azure_RBAC'
+      workingDirectory: infrastructure
+      serviceConnection: $(platformServiceConnection_Role)
+      environmentName: platform-role
+      managementGroupId: $(rootMg)
+      location: $(location)
+      templateFile_roleDefinitions: $(deploy_Role_Definitions.templateFile)
+      templateFile_roleAssignments: $(deploy_Role_Assignments.templateFile)
+      templateParameterFile_roleDefinitions: $(deploy_Role_Definitions.templateParameterFile)
+      templateParameterFile_roleAssignments: $(deploy_Role_Assignments.templateParameterFile)
+      whatIf: false
+      enableRoleAssignments: ${{ parameters.enableRoleAssignments }}
+
+  # Deploy Azure PIM
+  - template: templates/deploy_Default.yml
+    parameters:
+      jobId: $(build.buildId)
+      condition: and(succeeded(),eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+      dependsOn: [build]
+      deploymentLevel: 'managementGroup'
+      moduleName: 'Azure PIM'
+      jobName: 'Azure_PIM'
+      workingDirectory: infrastructure
+      serviceConnection: $(platformServiceConnection_Role)
+      environmentName: platform-role # Use the same environment as Azure RBAC
+      managementGroupId: $(rootMg)
+      location: $(location)
+      templateFile: $(deploy_PIM.templateFile)
+      templateParameterFile: $(deploy_PIM.templateParameterFile)
+      whatIf: false

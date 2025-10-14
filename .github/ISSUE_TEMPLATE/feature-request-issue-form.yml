@@ -1,0 +1,18 @@
+name: Submit new Question/feedback
+description: Submit new Question/Feedback
+labels: [feedback, question]
+
+title: "Submit new question/feedback"
+
+body:
+- type: textarea
+  id: description
+  attributes:
+    label: Question/feedback
+  validations:
+    required: true
+    
+- type: textarea
+  id: answers
+  attributes:
+    label: Possible Answers/Solutions?
