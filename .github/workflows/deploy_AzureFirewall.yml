@@ -134,7 +134,7 @@ jobs:
 
       # Deploy
       - name: Deploy ${{ inputs.moduleName }}
-        uses: Azure/cli@v2.1.0
+        uses: Azure/cli@v2.2.0
         with:
           inlineScript: |
             moduleName="${{ inputs.moduleName }}"
